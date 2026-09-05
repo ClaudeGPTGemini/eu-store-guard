@@ -4,9 +4,5 @@ main = "src/index.js"
 compatibility_date = "2026-08-01"
 compatibility_flags = ["nodejs_compat"]
 
-[triggers]
-crons = ["0 4 * * *"]   # verificación diaria del storefront
-
 [vars]
 APP_ENV = "development"
-SHOPIFY_API_KEY = "TODO"   # el client id puede ser público; el secret nunca va aquí
