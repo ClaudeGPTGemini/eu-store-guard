@@ -1,0 +1,15 @@
+{
+  "regime": "EMPCO_2024_825",
+  "description": "Directive (EU) 2024/825 (EmpCo). Transposition deadline 2026-03-27; application from 2026-09-27. Status per market verified against EUR-Lex national transposition measures.",
+  "markets": {
+    "ES": {
+      "status": "NOT_NOTIFIED",
+      "national_source": null,
+      "effective_from": null,
+      "note": "EUR-Lex: 0 national measures communicated; Commission infringement procedure opened 2026-05-28.",
+      "checked_at": "2026-09-04"
+    }
+  },
+  "default_status": "UNKNOWN",
+  "regime_last_reviewed": "2026-09-04"
+}

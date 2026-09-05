@@ -1,0 +1,328 @@
+{
+  "requirement": "EU_EMPCO_REPAIR_UPDATE_INFO",
+  "rule_id": "EU_EMPCO_REPAIR_UPDATE_INFO_2026_01",
+  "version": 1,
+  "level": "PRODUCT_MARKET",
+  "effective_from": "2026-09-27",
+  "sources": [
+    "Directive (EU) 2024/825 amending Directive 2011/83/EU Art. 6",
+    "European Commission guidance"
+  ],
+  "market_activation": {
+    "regime": "EMPCO_2024_825",
+    "required": true,
+    "max_status_when_not_verified_active": "CONFIGURED"
+  },
+  "never_generated_by_guard": [
+    "minimum_update_period",
+    "minimum_update_end_date",
+    "reparability_score",
+    "spare_parts_availability",
+    "spare_parts_estimated_cost",
+    "spare_parts_ordering_procedure",
+    "repair_instruction_availability",
+    "repair_restrictions",
+    "producer_has_made_information_available"
+  ],
+  "verification_surface": "PRECONTRACT_PRODUCT_INFORMATION",
+  "evaluation": {
+    "gates": [
+      {
+        "check": {
+          "any": [
+            {
+              "all": [
+                {
+                  "in": [
+                    "$input.product_kind",
+                    [
+                      "GOOD_WITH_DIGITAL_ELEMENTS",
+                      "DIGITAL_CONTENT",
+                      "DIGITAL_SERVICE"
+                    ]
+                  ]
+                },
+                {
+                  "eq": [
+                    "$input.update_info_made_available",
+                    true
+                  ]
+                }
+              ]
+            },
+            {
+              "eq": [
+                "$input.eu_reparability_score_status",
+                "APPLICABLE"
+              ]
+            },
+            {
+              "all": [
+                {
+                  "eq": [
+                    "$input.eu_reparability_score_status",
+                    "NOT_APPLICABLE"
+                  ]
+                },
+                {
+                  "eq": [
+                    "$input.producer_repair_info_made_available",
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "on_false": "NOT_APPLICABLE",
+        "on_unknown": "NEEDS_INFORMATION",
+        "reason": "repair_update_applicability"
+      }
+    ],
+    "required": [
+      {
+        "requires_if": {
+          "all": [
+            {
+              "in": [
+                "$input.product_kind",
+                [
+                  "GOOD_WITH_DIGITAL_ELEMENTS",
+                  "DIGITAL_CONTENT",
+                  "DIGITAL_SERVICE"
+                ]
+              ]
+            },
+            {
+              "eq": [
+                "$input.update_info_made_available",
+                true
+              ]
+            }
+          ]
+        },
+        "fields": [
+          "$input.update_info_source",
+          "$input.minimum_update_period_type"
+        ],
+        "reason": "update_info_incomplete",
+        "unknown_reason": "update_branch_unknown"
+      },
+      {
+        "requires_if": {
+          "eq": [
+            "$input.minimum_update_period_type",
+            "DURATION"
+          ]
+        },
+        "unknown_as_false": true,
+        "fields": [
+          "$input.minimum_update_duration"
+        ],
+        "reason": "minimum_update_duration_missing",
+        "unknown_reason": "update_period_type_unknown",
+        "depends_on": "$input.minimum_update_period_type"
+      },
+      {
+        "requires_if": {
+          "eq": [
+            "$input.minimum_update_period_type",
+            "END_DATE"
+          ]
+        },
+        "unknown_as_false": true,
+        "fields": [
+          "$input.minimum_update_end_date"
+        ],
+        "reason": "minimum_update_end_date_missing",
+        "unknown_reason": "update_period_type_unknown",
+        "depends_on": "$input.minimum_update_period_type"
+      },
+      {
+        "requires_if": {
+          "eq": [
+            "$input.eu_reparability_score_status",
+            "APPLICABLE"
+          ]
+        },
+        "fields": [
+          "$input.reparability_score",
+          "$input.reparability_score_source"
+        ],
+        "reason": "reparability_score_incomplete",
+        "unknown_reason": "reparability_score_status_unknown"
+      },
+      {
+        "requires_if": {
+          "all": [
+            {
+              "eq": [
+                "$input.eu_reparability_score_status",
+                "NOT_APPLICABLE"
+              ]
+            },
+            {
+              "eq": [
+                "$input.producer_repair_info_made_available",
+                true
+              ]
+            }
+          ]
+        },
+        "fields": [
+          "$input.spare_parts_availability",
+          "$input.repair_maintenance_instructions_availability",
+          "$input.repair_restrictions",
+          "$input.repair_info_source"
+        ],
+        "reason": "repair_info_incomplete",
+        "unknown_reason": "repair_info_branch_unknown"
+      },
+      {
+        "requires_if": {
+          "eq": [
+            "$input.spare_parts_availability",
+            true
+          ]
+        },
+        "unknown_as_false": true,
+        "fields": [
+          "$input.spare_parts_estimated_cost",
+          "$input.spare_parts_ordering_procedure"
+        ],
+        "reason": "spare_parts_details_missing",
+        "unknown_reason": "spare_parts_availability_unknown",
+        "depends_on": "$input.spare_parts_availability"
+      }
+    ],
+    "checks": [
+      {
+        "check": {
+          "any": [
+            {
+              "not": {
+                "present": "$input.update_info_source"
+              }
+            },
+            {
+              "in": [
+                "$input.update_info_source",
+                [
+                  "producer",
+                  "provider",
+                  "producer_document",
+                  "provider_document",
+                  "merchant_confirmed_received"
+                ]
+              ]
+            }
+          ]
+        },
+        "reason": "update_info_source_not_admitted",
+        "on_fail": "NEEDS_INFORMATION"
+      },
+      {
+        "check": {
+          "any": [
+            {
+              "not": {
+                "present": "$input.minimum_update_period_type"
+              }
+            },
+            {
+              "in": [
+                "$input.minimum_update_period_type",
+                [
+                  "DURATION",
+                  "END_DATE"
+                ]
+              ]
+            }
+          ]
+        },
+        "reason": "update_period_type_invalid",
+        "on_fail": "NEEDS_INFORMATION"
+      },
+      {
+        "check": {
+          "any": [
+            {
+              "not": {
+                "present": "$input.repair_restrictions"
+              }
+            },
+            {
+              "in": [
+                "$input.repair_restrictions",
+                [
+                  "NONE_DECLARED",
+                  "TEXT",
+                  "REFERENCE"
+                ]
+              ]
+            }
+          ]
+        },
+        "reason": "repair_restrictions_invalid",
+        "on_fail": "NEEDS_INFORMATION"
+      },
+      {
+        "check": {
+          "any": [
+            {
+              "not": {
+                "present": "$input.reparability_score_source"
+              }
+            },
+            {
+              "in": [
+                "$input.reparability_score_source",
+                [
+                  "eu_label",
+                  "producer",
+                  "producer_document",
+                  "merchant_confirmed_received"
+                ]
+              ]
+            }
+          ]
+        },
+        "reason": "reparability_score_source_not_admitted",
+        "on_fail": "NEEDS_INFORMATION"
+      },
+      {
+        "check": {
+          "any": [
+            {
+              "not": {
+                "present": "$input.repair_info_source"
+              }
+            },
+            {
+              "in": [
+                "$input.repair_info_source",
+                [
+                  "producer",
+                  "provider",
+                  "producer_document",
+                  "provider_document",
+                  "merchant_confirmed_received"
+                ]
+              ]
+            }
+          ]
+        },
+        "reason": "repair_info_source_not_admitted",
+        "on_fail": "NEEDS_INFORMATION"
+      }
+    ],
+    "verification": {
+      "checks": [
+        "$verification.precontract_info_verified"
+      ],
+      "surfaces": [
+        "precontract_product_information"
+      ]
+    }
+  }
+}

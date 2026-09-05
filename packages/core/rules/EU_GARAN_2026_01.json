@@ -1,0 +1,131 @@
+{
+  "requirement": "EU_GARAN",
+  "rule_id": "EU_GARAN_2026_01",
+  "version": 1,
+  "level": "PRODUCT",
+  "effective_from": "2026-09-27",
+  "sources": [
+    "Directive (EU) 2024/825",
+    "Implementing Regulation (EU) 2025/1960",
+    "European Commission guidance, April 2026"
+  ],
+  "asset_policy": {
+    "format": "SVG_RGB",
+    "single_multilingual_label": true,
+    "modifiable": false
+  },
+  "evaluation": {
+    "gates": [
+      {
+        "check": {
+          "eq": [
+            "$input.producer_guarantee",
+            true
+          ]
+        },
+        "on_false": "NOT_APPLICABLE",
+        "reason": "producer_guarantee"
+      },
+      {
+        "check": {
+          "eq": [
+            "$input.no_additional_cost",
+            true
+          ]
+        },
+        "on_false": "NOT_APPLICABLE",
+        "reason": "no_additional_cost"
+      },
+      {
+        "check": {
+          "eq": [
+            "$input.covers_whole_good",
+            true
+          ]
+        },
+        "on_false": "NOT_APPLICABLE",
+        "reason": "covers_whole_good"
+      },
+      {
+        "check": {
+          "gt": [
+            "$input.duration_years",
+            2
+          ]
+        },
+        "on_false": "NOT_APPLICABLE",
+        "reason": "duration_over_two_years"
+      },
+      {
+        "check": {
+          "eq": [
+            "$input.information_supplied_by_producer",
+            true
+          ]
+        },
+        "on_false": "NOT_APPLICABLE",
+        "reason": "information_supplied_by_producer"
+      }
+    ],
+    "required": [
+      "$input.brand_trademark",
+      "$input.model_identifier",
+      {
+        "requires_if": {
+          "eq": [
+            "$input.producer_relationship",
+            "reseller"
+          ]
+        },
+        "fields": [
+          "$input.producer_label_asset"
+        ],
+        "reason": "NEEDS_PRODUCER_LABEL",
+        "unknown_reason": "producer_relationship_unknown"
+      }
+    ],
+    "checks": [
+      {
+        "check": {
+          "fn": "isValidGaranDuration",
+          "arg": "$input.duration_years"
+        },
+        "reason": "duration_invalid_or_missing",
+        "on_fail": "NEEDS_INFORMATION"
+      },
+      {
+        "check": {
+          "in": [
+            "$input.producer_relationship",
+            [
+              "producer",
+              "reseller"
+            ]
+          ]
+        },
+        "reason": "producer_relationship_unknown",
+        "on_fail": "NEEDS_INFORMATION"
+      }
+    ],
+    "verification": {
+      "checks": [
+        "$verification.sku_applicable",
+        "$verification.model_identifier",
+        "$verification.duration",
+        "$verification.rgb",
+        "$verification.product_association",
+        "$verification.link"
+      ],
+      "surfaces": [
+        "product_page",
+        "checkout",
+        "confirmation_email"
+      ]
+    }
+  },
+  "market_activation": {
+    "regime": "EMPCO_2024_825",
+    "required": true,
+    "max_status_when_not_verified_active": "CONFIGURED"
+  }
+}

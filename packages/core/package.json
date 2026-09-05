@@ -1,0 +1,18 @@
+{
+  "name": "@eu-store-guard/core",
+  "version": "0.2.1",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "exports": {
+    ".": "./src/engine.js",
+    "./status": "./src/status.js",
+    "./activation": "./src/activation.js",
+    "./completeness": "./src/completeness.js",
+    "./evaluator": "./src/evaluator.js",
+    "./evidence": "./src/evidenceLog.js",
+    "./lint": "./src/lint.js"
+  },
+  "private": true
+}

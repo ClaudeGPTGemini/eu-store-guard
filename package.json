@@ -1,0 +1,19 @@
+{
+  "name": "eu-store-guard",
+  "version": "0.3.1",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/core", "apps/worker"],
+  "scripts": {
+    "lint": "eslint . && node scripts/secret-scan.mjs",
+    "test": "npm test --workspaces",
+    "build": "npm run build --workspace apps/worker",
+    "audit:ci": "npm audit --audit-level=high"
+  },
+  "devDependencies": {
+    "eslint": "9.15.0",
+    "@eslint/js": "9.15.0",
+    "globals": "15.12.0"
+  },
+  "engines": { "node": ">=20" }
+}

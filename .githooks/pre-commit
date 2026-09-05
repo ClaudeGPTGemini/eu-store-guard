@@ -1,0 +1,3 @@
+#!/bin/sh
+# Bloquea el commit si el escáner de secretos detecta algo. Activar una vez: git config core.hooksPath .githooks
+node scripts/secret-scan.mjs || { echo "pre-commit: commit bloqueado por secret-scan"; exit 1; }

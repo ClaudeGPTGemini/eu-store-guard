@@ -1,0 +1,24 @@
+{
+  "requirement": "GPSR_WARNING_LANGUAGE_ES_NATIONAL_MINIMUM",
+  "rule_id": "GPSR_WARNING_LANGUAGE_ES_NATIONAL_MINIMUM_2024_01",
+  "version": 1,
+  "level": "PRODUCT_MARKET",
+  "effective_from": "2024-12-13",
+  "scope": { "market": "ES" },
+  "sources": ["Regulation (EU) 2023/988 Art. 19 (language determined by Member State)", "Spain: consumer legislation requiring mandatory labelling information, including warnings and risks, at least in Castilian Spanish (BOE)"],
+  "status_footnote": "Verifies the Spanish national minimum-language requirement monitored by EU Store Guard. It does not assess additional sector-specific or autonomous-community language requirements.",
+  "evaluation": {
+    "gates": [
+      { "check": { "eq": ["$market.marketCountry", "ES"] }, "on_false": "NOT_APPLICABLE", "reason": "market_not_es" },
+      { "check": { "eq": ["$input.safety.required", true] }, "on_false": "NOT_APPLICABLE", "on_unknown": "NEEDS_INFORMATION", "reason": "safety_information_required" }
+    ],
+    "required": ["$input.safety.translations.es.content", "$input.safety.translations.es.source"],
+    "checks": [
+      { "check": { "in": ["$input.safety.translations.es.source", ["manufacturer_provided_translation", "merchant_provided_translation", "approved_translation", "machine_generated_unapproved"]] }, "reason": "spanish_safety_translation_source_unknown", "on_fail": "NEEDS_INFORMATION" }
+    ],
+    "verification": { "checks": ["$verification.product_offer_es_verified"], "surfaces": ["product_offer_es"] },
+    "caps": [
+      { "unless": { "in": ["$input.safety.translations.es.source", ["manufacturer_provided_translation", "merchant_provided_translation", "approved_translation"]] }, "max": "CONFIGURED", "reason": "spanish_safety_translation_not_approved" }
+    ]
+  }
+}

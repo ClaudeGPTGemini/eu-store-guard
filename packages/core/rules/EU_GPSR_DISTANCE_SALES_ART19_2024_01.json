@@ -1,0 +1,37 @@
+{
+  "requirement": "EU_GPSR_DISTANCE_SALES_ART19",
+  "rule_id": "EU_GPSR_DISTANCE_SALES_ART19_2024_01",
+  "version": 1,
+  "level": "PRODUCT_MARKET",
+  "effective_from": "2024-12-13",
+  "sources": ["Regulation (EU) 2023/988 (GPSR) Art. 19, consolidated 2026-05-29", "European Commission guidance on Art. 19"],
+  "never_generated_by_guard": ["manufacturer", "manufacturer_established_in_eu", "responsible_person", "responsible_person_role", "postal_addresses", "electronic_addresses", "product_identifier", "safety_information_required", "warning_text", "safety_instructions", "final_safety_translations", "sector_legislation", "gpsr_scope_when_not_deterministic"],
+  "status_footnote": "LIVE_VERIFIED means EU Store Guard detected the configured information on the monitored sales surface. It is not a legal compliance determination.",
+  "evaluation": {
+    "gates": [
+      { "check": { "eq": ["$input.scope.distance_sale", true] }, "on_false": "NOT_APPLICABLE", "reason": "not_distance_sale" },
+      { "check": { "eq": ["$input.scope.eu_market_monitored", true] }, "on_false": "NOT_APPLICABLE", "reason": "no_eu_market_monitored" },
+      { "check": { "not": { "eq": ["$input.scope.gpsr_scope", "OUT"] } }, "on_false": "NOT_APPLICABLE", "reason": "gpsr_scope_out" },
+      { "check": { "eq": ["$input.scope.gpsr_scope", "IN"] }, "on_false": "UNKNOWN", "on_unknown": "UNKNOWN", "reason": "gpsr_scope_unknown" }
+    ],
+    "required": [
+      "$input.manufacturer.display_name",
+      "$input.manufacturer.postal_address",
+      "$input.manufacturer.electronic_address",
+      { "requires_if": { "eq": ["$input.manufacturer.established_in_eu", false] }, "fields": ["$input.responsible_person.name", "$input.responsible_person.postal_address", "$input.responsible_person.electronic_address"], "reason": "responsible_person_required_non_eu_manufacturer", "unknown_reason": "manufacturer_establishment_unknown" },
+      "$input.product.picture",
+      "$input.product.type_or_model",
+      "$input.product.identifier",
+      { "requires_if": { "eq": ["$input.safety.required", true] }, "fields": ["$input.safety.content", "$input.safety.source"], "reason": "safety_information_required_but_missing", "unknown_reason": "safety_information_applicability_unknown" }
+    ],
+    "checks": [
+      { "check": { "any": [ { "eq": ["$input.safety.required", false] }, { "in": ["$input.safety.source", ["manufacturer", "technical_documentation", "approved_product_record", "merchant_confirmed"]] } ] }, "reason": "safety_source_not_authoritative", "on_fail": "NEEDS_INFORMATION" }
+    ],
+    "verification": { "checks": ["$verification.product_offer_verified"], "surfaces": ["product_offer"] },
+    "caps": [
+      { "unless": { "any": [ { "eq": ["$input.safety.required", false] }, { "in": ["$input.safety.translation_source", ["merchant_provided_translation", "manufacturer_provided_translation", "approved_translation"]] } ] }, "max": "CONFIGURED", "reason": "machine_translation_unapproved" },
+      { "unless": { "any": [ { "eq": ["$input.safety.required", false] }, { "eq": ["$input.safety.market_language_rule", "VERIFIED"] } ] }, "max": "LIVE_PARTIAL", "reason": "market_warning_language_rule_unknown" },
+      { "unless": { "in": ["$verification.direct_purchase_surface", ["none", "verified"]] }, "max": "LIVE_PARTIAL", "reason": "direct_purchase_surface_unverified" }
+    ]
+  }
+}
