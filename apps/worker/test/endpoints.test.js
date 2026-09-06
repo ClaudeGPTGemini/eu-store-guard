@@ -1,7 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import worker, { authorizeInternalRequest } from "../src/index.js";
+import worker from "../src/index.js";
+import { authorizeInternalRequest, guardInternalRequest } from "../src/internal-auth.js";
 
 const SIN = { APP_ENV: "test" };
 const CON = { APP_ENV: "test", EVALUATE_TOKEN: "test-token" };
@@ -10,6 +11,25 @@ const st = (p, env, h, i) => worker.fetch(req(p, h, i), env, {}).then((r) => r.s
 const OK = { authorization: "Bearer test-token" };
 const MAL = { authorization: "Bearer token-incorrecto" };
 const POST = { method: "POST", body: "{}" };
+
+test("internal-auth: sin secret configurado devuelve null y responde 503", () => {
+  assert.equal(authorizeInternalRequest(req("/x"), SIN), null);
+  assert.equal(authorizeInternalRequest(req("/x", OK), SIN), null);
+  assert.equal(guardInternalRequest(req("/x", OK), SIN).status, 503);
+});
+
+test("internal-auth: sin cabecera o token erroneo devuelve false y responde 401", () => {
+  assert.equal(authorizeInternalRequest(req("/x"), CON), false);
+  assert.equal(authorizeInternalRequest(req("/x", MAL), CON), false);
+  assert.equal(authorizeInternalRequest(req("/x", { authorization: "test-token" }), CON), false);
+  assert.equal(guardInternalRequest(req("/x"), CON).status, 401);
+  assert.equal(guardInternalRequest(req("/x", MAL), CON).status, 401);
+});
+
+test("internal-auth: token correcto autoriza y no genera rechazo", () => {
+  assert.equal(authorizeInternalRequest(req("/x", OK), CON), true);
+  assert.equal(guardInternalRequest(req("/x", OK), CON), null);
+});
 
 test("/health publico: 200 tambien sin EVALUATE_TOKEN configurado", async () => {
   assert.equal(await st("/health", SIN), 200);
@@ -40,15 +60,10 @@ test("/evaluate: misma matriz 503 / 401 / 401 / 200", async () => {
   assert.equal(await st("/evaluate", CON, OK, POST), 200);
 });
 
-test("invariante: una sola implementacion de autenticacion para /rules y /evaluate", () => {
+// Invariante por frontera de modulo, no por recuento de texto.
+test("invariante: index.js delega toda la autenticacion en internal-auth.js", () => {
   const src = readFileSync(new URL("../src/index.js", import.meta.url), "utf8");
-  // El token solo se lee dentro del helper: ambas apariciones estan en su cuerpo y ninguna fuera.
-  const helper = src.slice(src.indexOf("export function authorizeInternalRequest"), src.indexOf("function guard"));
-  assert.equal((src.match(/EVALUATE_TOKEN/g) ?? []).length, 2);
-  assert.equal((helper.match(/EVALUATE_TOKEN/g) ?? []).length, 2);
-  assert.equal((src.match(/function authorizeInternalRequest/g) ?? []).length, 1);
-  assert.equal((src.match(/guard\(request, env\)/g) ?? []).length, 3);
-  assert.equal(authorizeInternalRequest(req("/rules"), SIN), null);
-  assert.equal(authorizeInternalRequest(req("/rules", MAL), CON), false);
-  assert.equal(authorizeInternalRequest(req("/rules", OK), CON), true);
+  assert.match(src, /from "\.\/internal-auth\.js"/);
+  assert.doesNotMatch(src, /EVALUATE_TOKEN/, "solo internal-auth.js puede leer el token");
+  assert.doesNotMatch(src, /authorization/i, "index.js no debe parsear la cabecera Authorization");
 });
