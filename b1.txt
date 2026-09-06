@@ -1,6 +1,0 @@
-ℹ pass 25
-ℹ fail 0
-ℹ pass 6
-ℹ fail 0
-e4db25e refactor(core): motor unico - orchestrator.js compartido por Node y Worker
-pendientes: 0
