@@ -10,7 +10,7 @@ const call = (path, init = {}) => worker.fetch(new Request("https://guard.local"
 
 test("health y listado de reglas", async () => {
   const h = await (await call("/health")).json();
-  assert.deepEqual([h.ok, h.rules, h.env], [true, 5, "test"]);
+  assert.deepEqual(h, { ok: true });
   const rules = await (await call("/rules")).json();
   assert.ok(rules.some((r) => r.rule_id === "EU_GPSR_DISTANCE_SALES_ART19_2024_01"));
 });
