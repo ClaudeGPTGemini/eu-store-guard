@@ -12,7 +12,8 @@
     "./completeness": "./src/completeness.js",
     "./evaluator": "./src/evaluator.js",
     "./evidence": "./src/evidenceLog.js",
-    "./lint": "./src/lint.js"
+    "./lint": "./src/lint.js",
+    "./orchestrator": "./src/orchestrator.js"
   },
   "private": true
 }
