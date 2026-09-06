@@ -36,3 +36,6 @@ Sandbox efímero → GitHub privado → CI sin secretos → Cloudflare Workers B
 - GitHub Pro/Team para branch protection en repo privado (~4 USD/mes).
 - `main`: PR obligatoria, checks obligatorios, rama actualizada, sin force-push, sin bypass.
 - Registro Shopify App Store (19 USD) solo tras QA.
+
+## Artefactos temporales
+Cualquier salida manual de tests, logs o verificaciones se escribe en `/tmp` o en `.scratch/` (ignorado por git). Nunca en la raiz del repositorio: un `git add -A` la versionaria por accidente.
