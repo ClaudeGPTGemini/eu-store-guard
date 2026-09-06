@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "build": "node ../../scripts/build-check.mjs"
+    "build": "node ../../scripts/build-check.mjs && wrangler deploy --dry-run"
   },
-  "dependencies": { "@eu-store-guard/core": "*" }
+  "dependencies": {
+    "@eu-store-guard/core": "*"
+  }
 }

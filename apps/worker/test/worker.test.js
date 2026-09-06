@@ -2,12 +2,15 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import worker from "../src/index.js";
 import { readFileSync, readdirSync } from "node:fs";
-const env = { APP_ENV: "test" };
-const call = (path, init) => worker.fetch(new Request("https://guard.local" + path, init), env, {});
+const env = { APP_ENV: "test", EVALUATE_TOKEN: "test-token" };
+const call = (path, init = {}) => worker.fetch(new Request("https://guard.local" + path, {
+  ...init,
+  headers: { authorization: "Bearer test-token", ...(init.headers ?? {}) },
+}), env, {});
 
 test("health y listado de reglas", async () => {
   const h = await (await call("/health")).json();
-  assert.deepEqual([h.ok, h.rules, h.env], [true, 5, "test"]);
+  assert.deepEqual(h, { ok: true });
   const rules = await (await call("/rules")).json();
   assert.ok(rules.some((r) => r.rule_id === "EU_GPSR_DISTANCE_SALES_ART19_2024_01"));
 });
@@ -28,6 +31,17 @@ test("evaluate: GPSR verificado en ES; EmpCo con tope por activación", async ()
 test("evaluate: JSON inválido → 400; ruta desconocida → 404", async () => {
   assert.equal((await call("/evaluate", { method: "POST", body: "{" })).status, 400);
   assert.equal((await call("/nada")).status, 404);
+});
+
+test("evaluate falla cerrado sin configuración o autorización", async () => {
+  const request = new Request("https://guard.local/evaluate", { method: "POST", body: "{}" });
+  assert.equal((await worker.fetch(request.clone(), { APP_ENV: "test" }, {})).status, 503);
+  assert.equal((await worker.fetch(request, env, {})).status, 401);
+});
+
+test("evaluate rechaza cuerpos mayores de 128 KiB", async () => {
+  const body = JSON.stringify({ value: "x".repeat(128 * 1024) });
+  assert.equal((await call("/evaluate", { method: "POST", body })).status, 413);
 });
 
 test("rules-bundle está sincronizado con packages/core", () => {

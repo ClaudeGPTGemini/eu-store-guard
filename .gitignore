@@ -5,3 +5,8 @@ dist/
 .env
 .env.*
 *.log
+
+# Artefactos temporales de desarrollo: salidas de tests, logs y verificaciones manuales.
+# Escribir siempre en /tmp o en .scratch/ ; nunca en la raiz del repositorio.
+.scratch/
+tmp/
