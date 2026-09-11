@@ -1,0 +1,59 @@
+{%- comment -%}
+  EU Store Guard - Etiqueta armonizada GARAN (garantia comercial de durabilidad del productor).
+
+  App block de pagina de producto. Se coloca desde el editor de temas.
+
+  Alineado con packages/core/rules/EU_GARAN_2026_01.json:
+   - Solo se pinta con estado CONFIGURED, LIVE_PARTIAL o LIVE_VERIFIED, es decir: garantia ofrecida por
+     el productor, sin coste adicional, que cubre el bien completo, de duracion > 2 anios, y con la
+     informacion facilitada por el productor al vendedor.
+   - La etiqueta es unica para toda la UE (incorpora los idiomas en el propio diseno): no hay 24 versiones.
+   - Duracion valida: entero o medio anio, siempre > 2. Aqui solo se muestra lo que el core valido.
+   - Si el comerciante es revendedor y no hay asset del productor, NO se compone la etiqueta:
+     el core devuelve NEEDS_PRODUCER_LABEL y este bloque no pinta nada.
+   - Formato anidado: entrada compacta que despliega la etiqueta completa en 1 interaccion,
+     mas enlace clicable al mismo destino que el QR.
+
+  Los datos vienen de metafields escritos por la app, nunca inventados por el tema.
+{%- endcomment -%}
+
+{%- assign status = product.metafields.eu_store_guard.garan_status -%}
+{%- assign duration = product.metafields.eu_store_guard.garan_duration_years -%}
+{%- assign brand = product.metafields.eu_store_guard.garan_brand -%}
+{%- assign model = product.metafields.eu_store_guard.garan_model -%}
+{%- assign producer_asset = product.metafields.eu_store_guard.garan_producer_asset -%}
+
+{%- comment -%} Contrato de estados: solo se publica con datos completos verificados por el core. {%- endcomment -%}
+{%- assign renderable = 'CONFIGURED,LIVE_PARTIAL,LIVE_VERIFIED' | split: ',' -%}
+{%- assign can_render = false -%}
+{%- for s in renderable -%}{%- if s == status -%}{%- assign can_render = true -%}{%- endif -%}{%- endfor -%}
+{%- if can_render and duration != blank -%}
+  <div class="esg-garan" data-esg-rule="EU_GARAN_2026_01" data-esg-duration="{{ duration }}" data-esg-status="{{ status }}">
+    <button type="button" class="esg-garan__nested" aria-expanded="false" aria-controls="esg-garan-panel-{{ product.id }}">
+      <span class="esg-garan__badge">GARAN</span>
+      <span class="esg-garan__years">{{ duration }}</span>
+    </button>
+    <div id="esg-garan-panel-{{ product.id }}" class="esg-garan__panel" hidden>
+      <img class="esg-garan__asset"
+           src="{% if producer_asset != blank %}{{ producer_asset }}{% else %}{{ 'garan-rgb.svg' | asset_url }}{% endif %}"
+           alt="{{ 'garan.title' | t }}"
+           loading="lazy" decoding="async">
+      <dl class="esg-garan__data">
+        {%- if brand != blank -%}<dt>Brand</dt><dd>{{ brand }}</dd>{%- endif -%}
+        {%- if model != blank -%}<dt>Model</dt><dd>{{ model }}</dd>{%- endif -%}
+      </dl>
+      <a class="esg-garan__link" href="https://europa.eu/youreurope/citizens/consumers/shopping/guarantees-returns/index_en.htm" target="_blank" rel="noopener">{{ 'guarantee.learn_more' | t }}</a>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "GARAN durability label",
+  "target": "section",
+  "available_if": "{{ app.metafields.eu_store_guard.enabled }}",
+  "settings": [
+    { "type": "paragraph", "content": "Muestra la etiqueta GARAN solo en los productos que EU Store Guard ha marcado como aplicables. Si faltan datos del productor, no se muestra nada: la etiqueta nunca se reconstruye a partir de datos no facilitados por el productor." }
+  ]
+}
+{% endschema %}

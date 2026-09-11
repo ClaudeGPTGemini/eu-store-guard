@@ -1,0 +1,55 @@
+{%- comment -%}
+  EU Store Guard - Aviso armonizado de garantia legal (Reglamento de Ejecucion (UE) 2025/1960).
+
+  App embed block: se activa a nivel de tienda desde el editor de temas, sin tocar el codigo del tema.
+
+  Reglas que implementa, alineadas con packages/core/rules/EU_LEGAL_GUARANTEE_NOTICE_2026_01.json:
+   - Usa EXCLUSIVAMENTE el archivo oficial de la Comision, en RGB, sin modificar colores,
+     tipografia, QR, proporciones ni contenido.
+   - Resuelve el idioma por el locale del escaparate. Si el locale no esta entre las 24 lenguas
+     oficiales de la UE, NO hace fallback silencioso a ingles: no pinta nada y marca revision.
+   - Punto de entrada visible a nivel tienda; el aviso completo es accesible en 1 interaccion.
+   - Incluye enlace clicable al mismo destino que el QR (Your Europe).
+
+  Los SVG oficiales se importan del paquete publicado por la Comision y se suben a assets/
+  con el nombre notice-<locale>-rgb.svg. Este codigo no los genera ni los redibuja.
+{%- endcomment -%}
+
+{%- assign eu_locales = 'bg,hr,cs,da,nl,de,el,en,et,fi,fr,hu,ga,it,lt,lv,mt,pl,pt,ro,sk,sl,es,sv' | split: ',' -%}
+{%- assign current = request.locale.iso_code | split: '-' | first | downcase -%}
+{%- assign supported = false -%}
+{%- for l in eu_locales -%}{%- if l == current -%}{%- assign supported = true -%}{%- endif -%}{%- endfor -%}
+
+{%- if supported -%}
+  {%- assign notice_asset = 'notice-' | append: current | append: '-rgb.svg' -%}
+  <div class="esg-notice" data-esg-locale="{{ current }}" data-esg-rule="EU_LEGAL_GUARANTEE_NOTICE_2026_01" data-esg-status="{{ shop.metafields.eu_store_guard.notice_status }}">
+    <button type="button" class="esg-notice__trigger" aria-expanded="false" aria-controls="esg-notice-panel">
+      {{ 'guarantee.open' | t }}
+    </button>
+    <div id="esg-notice-panel" class="esg-notice__panel" hidden>
+      <img class="esg-notice__asset"
+           src="{{ notice_asset | asset_url }}"
+           alt="{{ 'guarantee.title' | t }}"
+           loading="lazy"
+           decoding="async">
+      <a class="esg-notice__link"
+         href="https://europa.eu/youreurope/citizens/consumers/shopping/guarantees-returns/index_{{ current }}.htm"
+         target="_blank" rel="noopener">{{ 'guarantee.learn_more' | t }}</a>
+    </div>
+  </div>
+{%- else -%}
+  {%- comment -%} Locale fuera de las 24 oficiales: se omite deliberadamente. Guard lo marca como LANGUAGE_REVIEW_REQUIRED. {%- endcomment -%}
+  <span class="esg-notice" data-esg-status="LANGUAGE_REVIEW_REQUIRED" data-esg-locale="{{ current }}" hidden></span>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "EU legal guarantee notice",
+  "target": "body",
+  "settings": [
+    { "type": "paragraph", "content": "Muestra el aviso armonizado oficial de garantia legal de la UE. Obligatorio desde el 27 de septiembre de 2026 para ventas B2C de bienes de consumo en la UE. Este bloque no sustituye asesoramiento juridico." },
+    { "type": "select", "id": "position", "label": "Position", "default": "bottom-right",
+      "options": [ { "value": "bottom-right", "label": "Bottom right" }, { "value": "bottom-left", "label": "Bottom left" }, { "value": "inline", "label": "Inline (footer)" } ] }
+  ]
+}
+{% endschema %}
