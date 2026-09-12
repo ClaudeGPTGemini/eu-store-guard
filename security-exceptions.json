@@ -1,31 +1,4 @@
 {
   "$schema": "Registro de excepciones de seguridad aceptadas. Cada entrada requiere justificación, alcance, fecha de revisión y aprobador.",
-  "exceptions": [
-    {
-      "id": "SEC-EXC-001",
-      "package": "@eslint/plugin-kit",
-      "advisory": "Regular Expression Denial of Service through ConfigCommentParser",
-      "severity": "low",
-      "affected_range": "<0.3.4",
-      "via": "eslint 9.15.0 (devDependency)",
-      "justification": "Dependencia exclusiva de desarrollo (linter). No se empaqueta ni se ejecuta en el Worker de Cloudflare ni en ninguna superficie expuesta a merchants. Solo procesa archivos del propio repositorio en CI.",
-      "risk_accepted_by": ["CEO 1 (Claude)", "Control de Calidad (Gemini)"],
-      "accepted_on": "2026-09-04",
-      "review_by": "2026-12-04",
-      "exit_criteria": "Actualizar eslint a una versión que resuelva @eslint/plugin-kit >= 0.3.4 y eliminar esta entrada."
-    },
-    {
-      "id": "SEC-EXC-002",
-      "package": "eslint",
-      "advisory": "Hereda SEC-EXC-001 (rango 9.10.0 - 9.26.0)",
-      "severity": "low",
-      "affected_range": "9.10.0 - 9.26.0",
-      "via": "devDependency directa",
-      "justification": "Misma causa raíz que SEC-EXC-001. Herramienta de desarrollo, no de ejecución.",
-      "risk_accepted_by": ["CEO 1 (Claude)", "Control de Calidad (Gemini)"],
-      "accepted_on": "2026-09-04",
-      "review_by": "2026-12-04",
-      "exit_criteria": "Idéntico a SEC-EXC-001."
-    }
-  ]
+  "exceptions": []
 }

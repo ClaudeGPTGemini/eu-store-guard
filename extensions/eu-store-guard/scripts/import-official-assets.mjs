@@ -11,7 +11,6 @@ import { inflateRawSync } from "node:zlib";
 import { mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createRequire } from "node:module";
 
 const ROOT = new URL("../", import.meta.url);
 const ASSETS = new URL("assets/", ROOT);
