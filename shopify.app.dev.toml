@@ -1,0 +1,18 @@
+# Development-only app. No production deployment or customer-data permissions.
+client_id = "d54ea21641df8e52ae3beb63677ae15c"
+name = "EU Store Guard DEV"
+application_url = "https://shopify.dev/apps/default-app-home"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = false
+dev_store_url = "eu-store-guard-dev.myshopify.com"
+
+[access_scopes]
+scopes = ""
+
+[auth]
+redirect_urls = []
+
+[webhooks]
+api_version = "2026-07"
