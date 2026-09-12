@@ -5,17 +5,20 @@ Publica en la tienda del comerciante, sin tocar el codigo de su tema:
 - **App embed block** `guarantee-notice`: aviso armonizado de garantia legal a nivel tienda.
 - **App block** `garan-label`: etiqueta GARAN en la pagina de producto, en formato anidado.
 
-## Assets oficiales: pendiente de importar
+## Assets oficiales: importacion automatizada
 
-`assets/` **no incluye** los archivos de la Comision Europea. Deben importarse del paquete oficial
-y subirse con estos nombres exactos:
+`assets/` no versiona los archivos de la Comision: se importan en CI con `npm run assets:import`,
+que descarga los paquetes oficiales, copia los SVG **en color** sin alterarlos y los renombra a:
 
 - `notice-<locale>-rgb.svg` para cada una de las 24 lenguas oficiales (bg, hr, cs, da, nl, de, el,
   en, et, fi, fr, hu, ga, it, lt, lv, mt, pl, pt, ro, sk, sl, es, sv)
 - `garan-rgb.svg` para la etiqueta GARAN (unica para toda la UE)
 
-Al importarlos se guarda el SHA-256 de cada archivo con `source_version`, para que el Evidence Log
-pueda reconstruir que version estaba activa. **No se redibujan, no se recortan, no se recolorean.**
+Fuentes exactas en `scripts/official-sources.json`. El importador escribe `assets-manifest.json`
+con el SHA-256 de cada archivo, y `npm run assets:check` falla si alguno no coincide o si falta
+alguno de los 24 locales. **No se redibujan, no se recortan, no se recolorean.**
+
+La version en blanco y negro se descarta deliberadamente: solo es valida en tienda fisica.
 
 ## Metafields que consume (namespace `eu_store_guard`)
 

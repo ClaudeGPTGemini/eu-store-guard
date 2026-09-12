@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "assets:import": "node scripts/import-official-assets.mjs",
+    "assets:check": "node scripts/import-official-assets.mjs --check"
   },
   "devDependencies": {
     "liquidjs": "^10.29.0"
