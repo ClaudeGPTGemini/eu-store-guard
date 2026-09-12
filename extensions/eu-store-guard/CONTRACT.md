@@ -25,6 +25,7 @@ Mas el valor derivado `LANGUAGE_REVIEW_REQUIRED`, que solo produce la resolucion
 | `garan_brand` | string | marca registrada, facilitada por el productor |
 | `garan_model` | string | identificador de modelo, facilitado por el productor |
 | `garan_producer_asset` | url | asset del productor (caso revendedor) |
+| `garan_producer_nested_asset` | url | asset anidado facilitado por el productor, con prioridad sobre el oficial |
 
 ## 2. Shopify -> Liquid (que se pinta)
 

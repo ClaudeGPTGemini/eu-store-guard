@@ -24,6 +24,7 @@
 {%- assign brand = product.metafields.eu_store_guard.garan_brand.value -%}
 {%- assign model = product.metafields.eu_store_guard.garan_model.value -%}
 {%- assign producer_asset = product.metafields.eu_store_guard.garan_producer_asset.value -%}
+{%- assign producer_nested = product.metafields.eu_store_guard.garan_producer_nested_asset.value -%}
 
 {%- comment -%} Contrato de estados: solo se publica con datos completos verificados por el core. {%- endcomment -%}
 {%- assign renderable = 'CONFIGURED,LIVE_PARTIAL,LIVE_VERIFIED' | split: ',' -%}
@@ -34,7 +35,15 @@
   {{ 'eu-store-guard.js' | asset_url | script_tag }}
   <div class="esg-garan" data-esg-rule="EU_GARAN_2026_01" data-esg-duration="{{ duration | escape }}" data-esg-status="{{ status | escape }}">
     <button type="button" class="esg-garan__nested" aria-expanded="false" aria-controls="esg-garan-panel-{{ block.id }}">
-      <span class="esg-garan__badge">GARAN</span>
+      {%- comment -%}
+        Presentacion anidada oficial de la Comision. Es la unica variante admitida en e-commerce
+        como entrada compacta; la insignia textual no sustituye al diseno armonizado.
+        Si el productor facilita su propio asset anidado, tiene prioridad.
+      {%- endcomment -%}
+      <img class="esg-garan__nested-asset"
+           src="{% if producer_nested != blank %}{{ producer_nested | escape }}{% else %}{{ 'garan-nested-rgb.svg' | asset_url }}{% endif %}"
+           alt="{{ 'garan.title' | t }}"
+           loading="lazy" decoding="async">
       <span class="esg-garan__years">{{ duration | escape }}</span>
     </button>
     <div id="esg-garan-panel-{{ block.id }}" class="esg-garan__panel" hidden>

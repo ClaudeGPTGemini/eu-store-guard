@@ -1,0 +1,29 @@
+name: Official Assets Drift
+
+# Comprueba periodicamente si la Comision ha publicado una actualizacion de los archivos oficiales.
+# Deliberadamente separado de la CI de cada commit: los assets versionados NO se sustituyen
+# automaticamente. Una actualizacion se detecta aqui y entra despues por PR revisado.
+on:
+  schedule:
+    - cron: '0 6 * * 1'   # lunes, 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: extensions/eu-store-guard
+
+jobs:
+  drift:
+    name: official-assets-drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+      # Descarga en un directorio aparte: nunca sobrescribe lo versionado.
+      - name: Descargar fuente oficial y comparar
+        run: node scripts/import-official-assets.mjs --drift

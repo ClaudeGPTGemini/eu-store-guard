@@ -5,20 +5,11 @@ Publica en la tienda del comerciante, sin tocar el codigo de su tema:
 - **App embed block** `guarantee-notice`: aviso armonizado de garantia legal a nivel tienda.
 - **App block** `garan-label`: etiqueta GARAN en la pagina de producto, en formato anidado.
 
-## Assets oficiales: importacion automatizada
+## Assets oficiales versionados
 
-`assets/` no versiona los archivos de la Comision: se importan en CI con `npm run assets:import`,
-que descarga los paquetes oficiales, copia los SVG **en color** sin alterarlos y los renombra a:
+Los 26 SVG oficiales aprobados y assets-manifest.json se conservan en el repositorio: 24 avisos en color, GARAN completo y GARAN anidado. Sus bytes coinciden con los paquetes oficiales descargados.
 
-- `notice-<locale>-rgb.svg` para cada una de las 24 lenguas oficiales (bg, hr, cs, da, nl, de, el,
-  en, et, fi, fr, hu, ga, it, lt, lv, mt, pl, pt, ro, sk, sl, es, sv)
-- `garan-rgb.svg` para la etiqueta GARAN (unica para toda la UE)
-
-Fuentes exactas en `scripts/official-sources.json`. El importador escribe `assets-manifest.json`
-con el SHA-256 de cada archivo, y `npm run assets:check` falla si alguno no coincide o si falta
-alguno de los 24 locales. **No se redibujan, no se recortan, no se recolorean.**
-
-La version en blanco y negro se descarta deliberadamente: solo es valida en tienda fisica.
+assets:check verifica lo versionado sin red. assets:drift compara con la fuente oficial sin sobrescribir. assets:import se reserva para importaciones o actualizaciones revisadas.
 
 ## Metafields que consume (namespace `eu_store_guard`)
 
@@ -40,13 +31,4 @@ Escritos por la app tras evaluar el core. El tema nunca los inventa.
 
 ## Integracion continua
 
-`.github/workflows/theme-extension.yml` ejecuta en GitHub Actions:
-
-| Job | Que hace |
-|---|---|
-| `theme-tests` | `npm test`: 36 pruebas (contrato, renderizado Liquid real, importador) |
-| `official-assets` | `assets:import` + `assets:check` y publica los SVG y el manifiesto como artefactos |
-
-Los assets **no se versionan en el repositorio**: se descargan de la Comision en cada ejecucion y
-se publican como artefacto, de modo que siempre proceden de la fuente oficial y su huella queda
-registrada en `assets-manifest.json`.
+El workflow theme-extension ejecuta los tests y assets:check sin descargar assets. El workflow assets-drift compara la fuente oficial semanalmente o bajo ejecucion manual. Los cambios deben revisarse antes de actualizar lo versionado.

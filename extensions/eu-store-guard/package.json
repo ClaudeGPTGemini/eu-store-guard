@@ -5,7 +5,8 @@
   "scripts": {
     "test": "node --test test/*.test.js",
     "assets:import": "node scripts/import-official-assets.mjs",
-    "assets:check": "node scripts/import-official-assets.mjs --check"
+    "assets:check": "node scripts/import-official-assets.mjs --check",
+    "assets:drift": "node scripts/import-official-assets.mjs --drift"
   },
   "devDependencies": {
     "liquidjs": "^10.29.0"
