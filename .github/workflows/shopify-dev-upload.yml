@@ -38,4 +38,4 @@ jobs:
           SHOPIFY_APP_AUTOMATION_TOKEN: ${{ secrets.SHOPIFY_DEV_AUTOMATION_TOKEN }}
         run: |
           test -n "$SHOPIFY_APP_AUTOMATION_TOKEN" || { echo 'Missing SHOPIFY_DEV_AUTOMATION_TOKEN'; exit 1; }
-          node .scratch/shopify-tools/node_modules/@shopify/cli/bin/run.js app deploy --path .scratch/shopify-dev-es --config dev --client-id d54ea21641df8e52ae3beb63677ae15c --no-release --no-color
+          node .scratch/shopify-tools/node_modules/@shopify/cli/bin/run.js app deploy --path .scratch/shopify-dev-es --config dev --no-release --no-color
