@@ -15,6 +15,8 @@
      mas enlace clicable al mismo destino que el QR.
 
   Los datos vienen de metafields escritos por la app, nunca inventados por el tema.
+   - Los IDs usan block.id: un mismo producto puede llevar varias instancias del bloque en la pagina
+     y product.id colisionaria, haciendo que un boton controlase el panel de otra instancia.
 {%- endcomment -%}
 
 {%- assign status = product.metafields.eu_store_guard.garan_status.value -%}
@@ -31,11 +33,11 @@
   {{ 'eu-store-guard.css' | asset_url | stylesheet_tag }}
   {{ 'eu-store-guard.js' | asset_url | script_tag }}
   <div class="esg-garan" data-esg-rule="EU_GARAN_2026_01" data-esg-duration="{{ duration | escape }}" data-esg-status="{{ status | escape }}">
-    <button type="button" class="esg-garan__nested" aria-expanded="false" aria-controls="esg-garan-panel-{{ product.id }}">
+    <button type="button" class="esg-garan__nested" aria-expanded="false" aria-controls="esg-garan-panel-{{ block.id }}">
       <span class="esg-garan__badge">GARAN</span>
       <span class="esg-garan__years">{{ duration | escape }}</span>
     </button>
-    <div id="esg-garan-panel-{{ product.id }}" class="esg-garan__panel" hidden>
+    <div id="esg-garan-panel-{{ block.id }}" class="esg-garan__panel" hidden>
       <img class="esg-garan__asset"
            src="{% if producer_asset != blank %}{{ producer_asset | escape }}{% else %}{{ 'garan-rgb.svg' | asset_url }}{% endif %}"
            alt="{{ 'garan.title' | t }}"

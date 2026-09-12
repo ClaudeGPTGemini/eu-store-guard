@@ -31,10 +31,10 @@
   {{ 'eu-store-guard.css' | asset_url | stylesheet_tag }}
   {{ 'eu-store-guard.js' | asset_url | script_tag }}
   <div class="esg-notice" data-esg-locale="{{ current }}" data-esg-rule="EU_LEGAL_GUARANTEE_NOTICE_2026_01" data-esg-status="{{ notice_status | escape }}">
-    <button type="button" class="esg-notice__trigger" aria-expanded="false" aria-controls="esg-notice-panel">
+    <button type="button" class="esg-notice__trigger" aria-expanded="false" aria-controls="esg-notice-panel-{{ block.id }}">
       {{ 'guarantee.open' | t }}
     </button>
-    <div id="esg-notice-panel" class="esg-notice__panel" hidden>
+    <div id="esg-notice-panel-{{ block.id }}" class="esg-notice__panel" hidden>
       <img class="esg-notice__asset"
            src="{{ notice_asset | asset_url }}"
            alt="{{ 'guarantee.title' | t }}"

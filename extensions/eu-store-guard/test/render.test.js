@@ -19,11 +19,11 @@ const GARAN = strip("garan-label.liquid");
 const render = (tpl, ctx) => engine.parseAndRenderSync(tpl, ctx).trim();
 const mf = (v) => (v === undefined ? undefined : { value: v, type: "single_line_text_field" });
 const notice = (status, locale = "es") =>
-  render(NOTICE, { shop: { metafields: { eu_store_guard: { notice_status: mf(status) } } }, request: { locale: { iso_code: locale } } });
-const garan = (m) => {
+  render(NOTICE, { block: { id: "n1" }, shop: { metafields: { eu_store_guard: { notice_status: mf(status) } } }, request: { locale: { iso_code: locale } } });
+const garan = (m, blockId = "b1") => {
   const typed = {};
   for (const [k, v] of Object.entries(m)) typed[k] = mf(v);
-  return render(GARAN, { product: { id: 1, metafields: { eu_store_guard: typed } } });
+  return render(GARAN, { block: { id: blockId }, product: { id: 1, metafields: { eu_store_guard: typed } } });
 };
 
 const PUBLICABLES = ["CONFIGURED", "LIVE_PARTIAL", "LIVE_VERIFIED"];
@@ -153,4 +153,24 @@ test("Escape cierra tambien el aviso, no solo GARAN", () => {
   // Ambos contenedores deben quedar cubiertos por su propio descendiente.
   for (const b of boxes) assert.ok(selector.includes(b + ' [aria-expanded="true"]'), b + " sin descendiente propio");
   assert.ok(!/SCOPE \+ " " \+/.test(js), "no debe concatenarse el scope con coma");
+});
+
+test("IDs unicos: dos bloques GARAN del mismo producto no colisionan", () => {
+  const datos = { garan_status: "CONFIGURED", garan_duration_years: 3 };
+  const a = garan(datos, "block-aaa");
+  const b = garan(datos, "block-bbb");
+  const idDe = (html) => html.match(/id="(esg-garan-panel-[^"]+)"/)[1];
+  const controlaDe = (html) => html.match(/aria-controls="(esg-garan-panel-[^"]+)"/)[1];
+  assert.notEqual(idDe(a), idDe(b), "dos instancias deben tener IDs distintos");
+  assert.equal(controlaDe(a), idDe(a), "cada boton controla su propio panel");
+  assert.equal(controlaDe(b), idDe(b));
+  assert.ok(!/product\.id/.test(readFileSync(new URL("../blocks/garan-label.liquid", B), "utf8").split("{% schema %}")[0].replace(/{%-?\s*comment\s*-?%}[\s\S]*?{%-?\s*endcomment\s*-?%}/g, "")), "no debe usarse product.id para los IDs");
+});
+
+test("IDs unicos: el aviso tambien usa block.id", () => {
+  const html = notice("CONFIGURED");
+  const id = html.match(/id="(esg-notice-panel-[^"]+)"/)[1];
+  const ctrl = html.match(/aria-controls="(esg-notice-panel-[^"]+)"/)[1];
+  assert.equal(ctrl, id);
+  assert.match(id, /esg-notice-panel-n1/);
 });
