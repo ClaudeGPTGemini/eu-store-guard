@@ -16,7 +16,7 @@
 {%- endcomment -%}
 
 {%- comment -%} Contrato de estados: el aviso solo se publica con datos completos validados por el core. {%- endcomment -%}
-{%- assign notice_status = shop.metafields.eu_store_guard.notice_status -%}
+{%- assign notice_status = shop.metafields.eu_store_guard.notice_status.value -%}
 {%- assign renderable = 'CONFIGURED,LIVE_PARTIAL,LIVE_VERIFIED' | split: ',' -%}
 {%- assign can_render = false -%}
 {%- for st in renderable -%}{%- if st == notice_status -%}{%- assign can_render = true -%}{%- endif -%}{%- endfor -%}
@@ -30,7 +30,7 @@
   {%- assign notice_asset = 'notice-' | append: current | append: '-rgb.svg' -%}
   {{ 'eu-store-guard.css' | asset_url | stylesheet_tag }}
   {{ 'eu-store-guard.js' | asset_url | script_tag }}
-  <div class="esg-notice" data-esg-locale="{{ current }}" data-esg-rule="EU_LEGAL_GUARANTEE_NOTICE_2026_01" data-esg-status="{{ notice_status }}">
+  <div class="esg-notice" data-esg-locale="{{ current }}" data-esg-rule="EU_LEGAL_GUARANTEE_NOTICE_2026_01" data-esg-status="{{ notice_status | escape }}">
     <button type="button" class="esg-notice__trigger" aria-expanded="false" aria-controls="esg-notice-panel">
       {{ 'guarantee.open' | t }}
     </button>

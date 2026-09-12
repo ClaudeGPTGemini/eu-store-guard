@@ -6,7 +6,10 @@
   if (window.__esgInit) return;
   window.__esgInit = true;
 
-  var SCOPE = ".esg-notice, .esg-garan";
+  var BOXES = [".esg-notice", ".esg-garan"];
+  var SCOPE = BOXES.join(", ");
+  // Un selector por contenedor: "a, b [x]" solo aplicaria el descendiente al segundo.
+  var OPEN_IN_SCOPE = BOXES.map(function (b) { return b + ' [aria-expanded="true"]'; }).join(", ");
   var TRIGGERS = ".esg-notice__trigger, .esg-garan__nested";
 
   function toggle(trigger, open) {
@@ -16,7 +19,7 @@
     trigger.setAttribute("aria-expanded", String(next));
     panel.hidden = !next;
   }
-  function ours() { return document.querySelectorAll(SCOPE + " " + '[aria-expanded="true"]'); }
+  function ours() { return document.querySelectorAll(OPEN_IN_SCOPE); }
 
   document.addEventListener("click", function (e) {
     var t = e.target.closest(TRIGGERS);

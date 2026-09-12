@@ -17,11 +17,11 @@
   Los datos vienen de metafields escritos por la app, nunca inventados por el tema.
 {%- endcomment -%}
 
-{%- assign status = product.metafields.eu_store_guard.garan_status -%}
-{%- assign duration = product.metafields.eu_store_guard.garan_duration_years -%}
-{%- assign brand = product.metafields.eu_store_guard.garan_brand -%}
-{%- assign model = product.metafields.eu_store_guard.garan_model -%}
-{%- assign producer_asset = product.metafields.eu_store_guard.garan_producer_asset -%}
+{%- assign status = product.metafields.eu_store_guard.garan_status.value -%}
+{%- assign duration = product.metafields.eu_store_guard.garan_duration_years.value -%}
+{%- assign brand = product.metafields.eu_store_guard.garan_brand.value -%}
+{%- assign model = product.metafields.eu_store_guard.garan_model.value -%}
+{%- assign producer_asset = product.metafields.eu_store_guard.garan_producer_asset.value -%}
 
 {%- comment -%} Contrato de estados: solo se publica con datos completos verificados por el core. {%- endcomment -%}
 {%- assign renderable = 'CONFIGURED,LIVE_PARTIAL,LIVE_VERIFIED' | split: ',' -%}
@@ -30,19 +30,19 @@
 {%- if can_render and duration != blank -%}
   {{ 'eu-store-guard.css' | asset_url | stylesheet_tag }}
   {{ 'eu-store-guard.js' | asset_url | script_tag }}
-  <div class="esg-garan" data-esg-rule="EU_GARAN_2026_01" data-esg-duration="{{ duration }}" data-esg-status="{{ status }}">
+  <div class="esg-garan" data-esg-rule="EU_GARAN_2026_01" data-esg-duration="{{ duration | escape }}" data-esg-status="{{ status | escape }}">
     <button type="button" class="esg-garan__nested" aria-expanded="false" aria-controls="esg-garan-panel-{{ product.id }}">
       <span class="esg-garan__badge">GARAN</span>
-      <span class="esg-garan__years">{{ duration }}</span>
+      <span class="esg-garan__years">{{ duration | escape }}</span>
     </button>
     <div id="esg-garan-panel-{{ product.id }}" class="esg-garan__panel" hidden>
       <img class="esg-garan__asset"
-           src="{% if producer_asset != blank %}{{ producer_asset }}{% else %}{{ 'garan-rgb.svg' | asset_url }}{% endif %}"
+           src="{% if producer_asset != blank %}{{ producer_asset | escape }}{% else %}{{ 'garan-rgb.svg' | asset_url }}{% endif %}"
            alt="{{ 'garan.title' | t }}"
            loading="lazy" decoding="async">
       <dl class="esg-garan__data">
-        {%- if brand != blank -%}<dt>Brand</dt><dd>{{ brand }}</dd>{%- endif -%}
-        {%- if model != blank -%}<dt>Model</dt><dd>{{ model }}</dd>{%- endif -%}
+        {%- if brand != blank -%}<dt>Brand</dt><dd>{{ brand | escape }}</dd>{%- endif -%}
+        {%- if model != blank -%}<dt>Model</dt><dd>{{ model | escape }}</dd>{%- endif -%}
       </dl>
       <a class="esg-garan__link" href="https://europa.eu/youreurope/citizens/consumers/shopping/guarantees-returns/index_en.htm" target="_blank" rel="noopener">{{ 'guarantee.learn_more' | t }}</a>
     </div>

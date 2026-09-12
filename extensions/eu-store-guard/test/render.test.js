@@ -17,9 +17,14 @@ const NOTICE = strip("guarantee-notice.liquid");
 const GARAN = strip("garan-label.liquid");
 
 const render = (tpl, ctx) => engine.parseAndRenderSync(tpl, ctx).trim();
+const mf = (v) => (v === undefined ? undefined : { value: v, type: "single_line_text_field" });
 const notice = (status, locale = "es") =>
-  render(NOTICE, { shop: { metafields: { eu_store_guard: { notice_status: status } } }, request: { locale: { iso_code: locale } } });
-const garan = (m) => render(GARAN, { product: { id: 1, metafields: { eu_store_guard: m } } });
+  render(NOTICE, { shop: { metafields: { eu_store_guard: { notice_status: mf(status) } } }, request: { locale: { iso_code: locale } } });
+const garan = (m) => {
+  const typed = {};
+  for (const [k, v] of Object.entries(m)) typed[k] = mf(v);
+  return render(GARAN, { product: { id: 1, metafields: { eu_store_guard: typed } } });
+};
 
 const PUBLICABLES = ["CONFIGURED", "LIVE_PARTIAL", "LIVE_VERIFIED"];
 const NO_PUBLICABLES = ["NEEDS_INFORMATION", "NOT_APPLICABLE", "UNKNOWN", "", null, undefined];
@@ -109,10 +114,43 @@ test("el script se inicializa una sola vez aunque ambos bloques lo vinculen", ()
 
 test("Escape y clics externos quedan acotados a nuestros contenedores", () => {
   const js = readFileSync(new URL("../assets/eu-store-guard.js", import.meta.url), "utf8");
-  assert.match(js, /SCOPE\s*=\s*"\.esg-notice, \.esg-garan"/);
+  assert.match(js, /var BOXES = \["\.esg-notice", "\.esg-garan"\]/);
   assert.ok(!/document\.querySelectorAll\('\[aria-expanded/.test(js), "no debe seleccionar aria-expanded global");
   assert.match(js, /if \(!abiertos\.length\) return;/, "sin paneles nuestros abiertos, no interferir");
   // Se ignoran los comentarios: lo que importa es que no se invoque stopPropagation.
   const codigo = js.split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
   assert.ok(!/stopPropagation\s*\(/.test(codigo), "no debe bloquear el Escape de otros componentes");
+});
+
+test("metafields tipados: se consume .value, no el objeto metafield", () => {
+  const html = garan({ garan_status: "CONFIGURED", garan_duration_years: 3, garan_brand: "ACME" });
+  assert.match(html, /esg-garan__nested/);
+  assert.ok(!/\[object Object\]/.test(html), "no debe imprimir el objeto metafield");
+  assert.ok(!/single_line_text_field/.test(html), "no debe filtrar metadatos del metafield");
+});
+
+test("seguridad: marca y modelo se escapan y no inyectan HTML", () => {
+  const html = garan({
+    garan_status: "CONFIGURED", garan_duration_years: 3,
+    garan_brand: '<img src=x onerror=alert(1)>', garan_model: '"><script>alert(2)</script>'
+  });
+  assert.ok(!/<img src=x/.test(html), "la marca no debe generar elementos HTML");
+  assert.ok(!/<script>alert\(2\)/.test(html), "el modelo no debe inyectar scripts");
+  assert.match(html, /&lt;img src=x/, "debe aparecer escapado");
+});
+
+test("seguridad: el asset del productor se escapa al imprimirse", () => {
+  const html = garan({ garan_status: "CONFIGURED", garan_duration_years: 3, garan_producer_asset: 'x" onerror="alert(1)' });
+  assert.ok(!/onerror="alert/.test(html));
+});
+
+test("Escape cierra tambien el aviso, no solo GARAN", () => {
+  const js = readFileSync(new URL("../assets/eu-store-guard.js", import.meta.url), "utf8");
+  assert.match(js, /BOXES\.map/, "el selector debe construirse por contenedor");
+  const m = js.match(/var BOXES = \[([^\]]+)\]/);
+  const boxes = m[1].split(",").map((x) => x.trim().replace(/"/g, ""));
+  const selector = boxes.map((b) => b + ' [aria-expanded="true"]').join(", ");
+  // Ambos contenedores deben quedar cubiertos por su propio descendiente.
+  for (const b of boxes) assert.ok(selector.includes(b + ' [aria-expanded="true"]'), b + " sin descendiente propio");
+  assert.ok(!/SCOPE \+ " " \+/.test(js), "no debe concatenarse el scope con coma");
 });
