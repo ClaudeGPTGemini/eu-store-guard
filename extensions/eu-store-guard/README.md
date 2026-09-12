@@ -37,3 +37,16 @@ Escritos por la app tras evaluar el core. El tema nunca los inventa.
 - No traduce contenido de seguridad ni juridico.
 - No afirma cumplimiento: publica informacion y el core verifica que siga visible.
 - No recoge datos de clientes finales.
+
+## Integracion continua
+
+`.github/workflows/theme-extension.yml` ejecuta en GitHub Actions:
+
+| Job | Que hace |
+|---|---|
+| `theme-tests` | `npm test`: 36 pruebas (contrato, renderizado Liquid real, importador) |
+| `official-assets` | `assets:import` + `assets:check` y publica los SVG y el manifiesto como artefactos |
+
+Los assets **no se versionan en el repositorio**: se descargan de la Comision en cada ejecucion y
+se publican como artefacto, de modo que siempre proceden de la fuente oficial y su huella queda
+registrada en `assets-manifest.json`.

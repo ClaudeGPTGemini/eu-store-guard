@@ -17,7 +17,30 @@
       "description": "EU GARAN product label: colour, black and white, and nested display for e-commerce",
       "url": "https://commission.europa.eu/document/download/435fbeb1-fccc-4ead-bfa9-96625962ba09_en?filename=GARAN%20label%20for%20website.zip",
       "expected_size_mb": 1.78,
-      "target": "garan-rgb.svg"
+      "variants": [
+        {
+          "id": "full",
+          "target": "garan-rgb.svg",
+          "match": [
+            "garan"
+          ],
+          "exclude": [
+            "nested",
+            "compact",
+            "anidad"
+          ],
+          "description": "Etiqueta GARAN completa en color"
+        },
+        {
+          "id": "nested",
+          "target": "garan-nested-rgb.svg",
+          "match": [
+            "nested"
+          ],
+          "exclude": [],
+          "description": "Presentacion anidada, solo para e-commerce"
+        }
+      ]
     },
     {
       "id": "guidelines_pdf",

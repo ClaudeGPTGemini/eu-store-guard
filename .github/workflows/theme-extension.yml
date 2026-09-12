@@ -1,0 +1,53 @@
+name: Theme Extension
+
+on:
+  pull_request:
+    paths: [ 'extensions/**', '.github/workflows/theme-extension.yml' ]
+  push:
+    branches: [ main ]
+    paths: [ 'extensions/**' ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: extensions/eu-store-guard
+
+jobs:
+  tests:
+    name: theme-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm test
+
+  assets:
+    name: official-assets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+      # Descarga los paquetes oficiales de la Comision y verifica su integridad.
+      # Falla si falta cualquiera de los 24 locales o alguna variante GARAN.
+      - run: npm run assets:import
+      - run: npm run assets:check
+      # Los assets no se versionan: se publican como artefacto de la ejecucion.
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: official-assets
+          path: extensions/eu-store-guard/assets/*.svg
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: assets-manifest
+          path: extensions/eu-store-guard/assets-manifest.json
+          if-no-files-found: error
