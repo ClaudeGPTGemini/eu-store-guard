@@ -15,14 +15,22 @@
   con el nombre notice-<locale>-rgb.svg. Este codigo no los genera ni los redibuja.
 {%- endcomment -%}
 
+{%- comment -%} Contrato de estados: el aviso solo se publica con datos completos validados por el core. {%- endcomment -%}
+{%- assign notice_status = shop.metafields.eu_store_guard.notice_status -%}
+{%- assign renderable = 'CONFIGURED,LIVE_PARTIAL,LIVE_VERIFIED' | split: ',' -%}
+{%- assign can_render = false -%}
+{%- for st in renderable -%}{%- if st == notice_status -%}{%- assign can_render = true -%}{%- endif -%}{%- endfor -%}
+
 {%- assign eu_locales = 'bg,hr,cs,da,nl,de,el,en,et,fi,fr,hu,ga,it,lt,lv,mt,pl,pt,ro,sk,sl,es,sv' | split: ',' -%}
 {%- assign current = request.locale.iso_code | split: '-' | first | downcase -%}
 {%- assign supported = false -%}
 {%- for l in eu_locales -%}{%- if l == current -%}{%- assign supported = true -%}{%- endif -%}{%- endfor -%}
 
-{%- if supported -%}
+{%- if can_render and supported -%}
   {%- assign notice_asset = 'notice-' | append: current | append: '-rgb.svg' -%}
-  <div class="esg-notice" data-esg-locale="{{ current }}" data-esg-rule="EU_LEGAL_GUARANTEE_NOTICE_2026_01" data-esg-status="{{ shop.metafields.eu_store_guard.notice_status }}">
+  {{ 'eu-store-guard.css' | asset_url | stylesheet_tag }}
+  {{ 'eu-store-guard.js' | asset_url | script_tag }}
+  <div class="esg-notice" data-esg-locale="{{ current }}" data-esg-rule="EU_LEGAL_GUARANTEE_NOTICE_2026_01" data-esg-status="{{ notice_status }}">
     <button type="button" class="esg-notice__trigger" aria-expanded="false" aria-controls="esg-notice-panel">
       {{ 'guarantee.open' | t }}
     </button>
@@ -37,6 +45,8 @@
          target="_blank" rel="noopener">{{ 'guarantee.learn_more' | t }}</a>
     </div>
   </div>
+{%- elsif can_render == false -%}
+  {%- comment -%} Estado no publicable: no se pinta nada. La retraccion es inmediata en el siguiente render. {%- endcomment -%}
 {%- else -%}
   {%- comment -%} Locale fuera de las 24 oficiales: se omite deliberadamente. Guard lo marca como LANGUAGE_REVIEW_REQUIRED. {%- endcomment -%}
   <span class="esg-notice" data-esg-status="LANGUAGE_REVIEW_REQUIRED" data-esg-locale="{{ current }}" hidden></span>

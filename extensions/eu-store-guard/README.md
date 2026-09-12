@@ -23,7 +23,7 @@ Escritos por la app tras evaluar el core. El tema nunca los inventa.
 
 | Metafield | Uso |
 |---|---|
-| `garan_status` | Solo se pinta la etiqueta si vale `APPLICABLE` |
+| `garan_status` | Solo se pinta con `CONFIGURED`, `LIVE_PARTIAL` o `LIVE_VERIFIED` (ver CONTRACT.md) |
 | `garan_duration_years` | Duracion validada por el core (>2, entero o medio) |
 | `garan_brand`, `garan_model` | Marca registrada e identificador de modelo |
 | `garan_producer_asset` | Asset facilitado por el productor (caso revendedor) |

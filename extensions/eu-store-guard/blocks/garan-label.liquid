@@ -28,6 +28,8 @@
 {%- assign can_render = false -%}
 {%- for s in renderable -%}{%- if s == status -%}{%- assign can_render = true -%}{%- endif -%}{%- endfor -%}
 {%- if can_render and duration != blank -%}
+  {{ 'eu-store-guard.css' | asset_url | stylesheet_tag }}
+  {{ 'eu-store-guard.js' | asset_url | script_tag }}
   <div class="esg-garan" data-esg-rule="EU_GARAN_2026_01" data-esg-duration="{{ duration }}" data-esg-status="{{ status }}">
     <button type="button" class="esg-garan__nested" aria-expanded="false" aria-controls="esg-garan-panel-{{ product.id }}">
       <span class="esg-garan__badge">GARAN</span>

@@ -1,0 +1,118 @@
+// Pruebas de renderizado REAL: ejecutan las plantillas con un motor Liquid, no simulan condiciones.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { Liquid } from "liquidjs";
+
+const B = new URL("../blocks/", import.meta.url);
+const engine = new Liquid({ strictFilters: false, strictVariables: false });
+// Filtros de Shopify usados por los bloques. Devuelven marcadores comprobables.
+engine.registerFilter("asset_url", (v) => `/assets/${v}`);
+engine.registerFilter("stylesheet_tag", (v) => `<link rel="stylesheet" href="${v}">`);
+engine.registerFilter("script_tag", (v) => `<script src="${v}" defer></script>`);
+engine.registerFilter("t", (k) => `[[${k}]]`);
+
+const strip = (f) => readFileSync(new URL(f, B), "utf8").split("{% schema %}")[0];
+const NOTICE = strip("guarantee-notice.liquid");
+const GARAN = strip("garan-label.liquid");
+
+const render = (tpl, ctx) => engine.parseAndRenderSync(tpl, ctx).trim();
+const notice = (status, locale = "es") =>
+  render(NOTICE, { shop: { metafields: { eu_store_guard: { notice_status: status } } }, request: { locale: { iso_code: locale } } });
+const garan = (m) => render(GARAN, { product: { id: 1, metafields: { eu_store_guard: m } } });
+
+const PUBLICABLES = ["CONFIGURED", "LIVE_PARTIAL", "LIVE_VERIFIED"];
+const NO_PUBLICABLES = ["NEEDS_INFORMATION", "NOT_APPLICABLE", "UNKNOWN", "", null, undefined];
+
+test("aviso: publica solo con estados publicables", () => {
+  for (const s of PUBLICABLES) {
+    const html = notice(s);
+    assert.match(html, /esg-notice__trigger/, `${s} debe publicar`);
+    assert.match(html, /notice-es-rgb\.svg/);
+    assert.match(html, new RegExp(`data-esg-status="${s}"`));
+  }
+});
+
+test("aviso: retraccion real ante estados no publicables", () => {
+  for (const s of NO_PUBLICABLES) {
+    const html = notice(s);
+    assert.ok(!/esg-notice__trigger/.test(html), `estado ${s} no debe pintar el aviso`);
+    assert.ok(!/notice-.*-rgb\.svg/.test(html), `estado ${s} no debe referenciar el asset oficial`);
+  }
+});
+
+test("aviso: locale fuera de las 24 oficiales no pinta ni hace fallback a ingles", () => {
+  const html = notice("LIVE_VERIFIED", "ca");
+  assert.ok(!/notice-en-rgb\.svg/.test(html), "prohibido fallback a ingles");
+  assert.ok(!/esg-notice__trigger/.test(html));
+  assert.match(html, /LANGUAGE_REVIEW_REQUIRED/);
+});
+
+test("aviso: los 24 locales oficiales resuelven su propio asset", () => {
+  for (const l of ["bg","hr","cs","da","nl","de","el","en","et","fi","fr","hu","ga","it","lt","lv","mt","pl","pt","ro","sk","sl","es","sv"]) {
+    assert.match(notice("CONFIGURED", l), new RegExp(`notice-${l}-rgb\\.svg`), `falta asset para ${l}`);
+  }
+});
+
+test("GARAN: publica con estados publicables y datos completos", () => {
+  for (const s of PUBLICABLES) {
+    const html = garan({ garan_status: s, garan_duration_years: 3, garan_brand: "ACME", garan_model: "M1" });
+    assert.match(html, /esg-garan__nested/, `${s} debe publicar`);
+    assert.match(html, /GARAN/);
+    assert.match(html, /ACME/);
+  }
+});
+
+test("GARAN: retraccion real ante degradacion de estado", () => {
+  assert.match(garan({ garan_status: "LIVE_VERIFIED", garan_duration_years: 4 }), /esg-garan__nested/);
+  for (const s of NO_PUBLICABLES) {
+    assert.ok(!/esg-garan__nested/.test(garan({ garan_status: s, garan_duration_years: 4 })), `estado ${s} debe retirar el contenido`);
+  }
+});
+
+test("GARAN: sin duracion no publica aunque el estado lo permita", () => {
+  for (const d of ["", null, undefined]) {
+    assert.ok(!/esg-garan__nested/.test(garan({ garan_status: "LIVE_VERIFIED", garan_duration_years: d })));
+  }
+});
+
+test("GARAN: usa el asset del productor cuando existe; si no, el oficial", () => {
+  const conProductor = garan({ garan_status: "CONFIGURED", garan_duration_years: 3, garan_producer_asset: "https://cdn.example/p.svg" });
+  assert.match(conProductor, /https:\/\/cdn\.example\/p\.svg/);
+  const sinProductor = garan({ garan_status: "CONFIGURED", garan_duration_years: 3 });
+  assert.match(sinProductor, /garan-rgb\.svg/);
+});
+
+test("ambos bloques vinculan CSS y JS", () => {
+  for (const html of [notice("CONFIGURED"), garan({ garan_status: "CONFIGURED", garan_duration_years: 3 })]) {
+    assert.match(html, /<link rel="stylesheet" href="\/assets\/eu-store-guard\.css">/);
+    assert.match(html, /<script src="\/assets\/eu-store-guard\.js"/);
+  }
+});
+
+test("el HTML no imprime null ni undefined cuando faltan datos opcionales", () => {
+  const html = garan({ garan_status: "CONFIGURED", garan_duration_years: 3 });
+  assert.ok(!/undefined|null/.test(html));
+});
+
+test("el script se inicializa una sola vez aunque ambos bloques lo vinculen", () => {
+  const js = readFileSync(new URL("../assets/eu-store-guard.js", import.meta.url), "utf8");
+  assert.match(js, /window\.__esgInit/, "debe existir guarda de inicializacion");
+  assert.match(js, /if \(window\.__esgInit\) return;/);
+  // Simulacion: cargar el script dos veces debe registrar los listeners una sola vez.
+  const listeners = [];
+  const win = {}, doc = { addEventListener: (t) => listeners.push(t), querySelectorAll: () => [] };
+  const run = new Function("window", "document", js);
+  run(win, doc); run(win, doc);
+  assert.equal(listeners.length, 2, "solo un par de listeners (click y keydown) tras dos cargas");
+});
+
+test("Escape y clics externos quedan acotados a nuestros contenedores", () => {
+  const js = readFileSync(new URL("../assets/eu-store-guard.js", import.meta.url), "utf8");
+  assert.match(js, /SCOPE\s*=\s*"\.esg-notice, \.esg-garan"/);
+  assert.ok(!/document\.querySelectorAll\('\[aria-expanded/.test(js), "no debe seleccionar aria-expanded global");
+  assert.match(js, /if \(!abiertos\.length\) return;/, "sin paneles nuestros abiertos, no interferir");
+  // Se ignoran los comentarios: lo que importa es que no se invoque stopPropagation.
+  const codigo = js.split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
+  assert.ok(!/stopPropagation\s*\(/.test(codigo), "no debe bloquear el Escape de otros componentes");
+});
