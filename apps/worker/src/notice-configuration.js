@@ -33,4 +33,3 @@ export async function saveConfiguration(client, input, deployment, now = new Dat
   const config = { version: 1, input, decision, updatedAt: now.toISOString() };
   return client.write(snapshot, decision.status, config);
 }
-

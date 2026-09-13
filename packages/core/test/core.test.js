@@ -117,4 +117,3 @@ test("palabras prohibidas no aparecen como estados en el núcleo ni en las regla
   const ruleStatuses = rules.flatMap((r) => JSON.stringify(r.evaluation).match(/"(on_false|on_unknown|on_fail|max)":"([A-Z_]+)"/g) ?? []);
   for (const w of FORBIDDEN_WORDS) { assert.equal(src.includes(`"${w}"`), false, w); assert.equal(ruleStatuses.some((s) => s.endsWith(`"${w}"`)), false, w); }
 });
-

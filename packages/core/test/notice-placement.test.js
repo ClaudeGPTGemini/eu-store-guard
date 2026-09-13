@@ -47,4 +47,3 @@ test('every theme position has an explicit policy; supported values reach the ru
   }
   assert.equal(position.default,'top-bar');
 });
-

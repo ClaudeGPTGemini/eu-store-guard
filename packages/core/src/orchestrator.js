@@ -36,4 +36,3 @@ export function evaluate(rule, ctx) {
   const log = evidenceEntry({ storeId: ctx.storeId, marketCountry: ctx.market?.marketCountry, locale: ctx.market?.storefrontLocale, productId: ctx.productId ?? null, ruleId: rule.rule_id, ruleVersion: rule.version, ruleHash, presentation, status, technicalStatus: tech.status, reasons, assetHash: ctx.evidence?.assetHash ?? null, activation });
   return { status, technical_status: tech.status, reasons, derived: tech.derived, activation, log };
 }
-

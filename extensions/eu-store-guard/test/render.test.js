@@ -190,4 +190,3 @@ test("IDs unicos: el aviso tambien usa block.id", () => {
   assert.equal(ctrl, id);
   assert.match(id, /esg-notice-panel-n1/);
 });
-

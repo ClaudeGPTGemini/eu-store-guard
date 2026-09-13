@@ -27,4 +27,3 @@ La app guarda el log de la evaluación aceptada dentro de su configuración actu
 El test cruzado compara todas las opciones reales del schema con la política y ejecuta tanto el core como Liquid. Conserva las pruebas de retracción, idiomas y modal sobre top-bar.
 
 La barra fija todavía requiere comprobar colisiones con cabecera, cookies y menús, lectura a zoom, móviles, foco, legibilidad y acceso al aviso completo. Un nombre de posición, una casilla o CSS no acreditan prominencia. Candidata para auditoría; no desplegada ni declarada verificada. PR #3 sin fusionar, producción bloqueada, 0 €.
-

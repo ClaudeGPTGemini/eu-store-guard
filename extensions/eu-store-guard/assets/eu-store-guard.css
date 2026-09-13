@@ -39,4 +39,3 @@
 .esg-notice__dialog a { color: #003399; text-decoration: underline; }
 .esg-notice :focus-visible { outline: 3px solid #003399; outline-offset: 3px; }
 @media (max-width: 600px) { .esg-notice__dialog { width: 100%; height: 100dvh; max-height: 100dvh; border-radius: 0; border: 0; } }
-

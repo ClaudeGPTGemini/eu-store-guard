@@ -10,4 +10,3 @@ export function evidenceEntry({ storeId, marketCountry, locale, productId = null
     status: assertAllowedStatus(status), technical_status: technicalStatus ? assertAllowedStatus(technicalStatus) : null, reasons, asset_hash: assetHash,
     activation_status: snap?.status ?? null, activation_checked_at: snap?.checked_at ?? null, activation_national_source: snap?.national_source ?? null, activation_snapshot_hash: snapHash };
 }
-

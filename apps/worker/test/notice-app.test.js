@@ -164,4 +164,3 @@ test('App shell uses App Bridge and never contains a client secret', async () =>
   assert.equal(r.status, 200); assert.match(r.headers.get('Content-Security-Policy'), /frame-ancestors https:\/\/admin.shopify.com/);
   const html = await r.text(); assert.match(html, /shopify-api-key/); assert.doesNotMatch(html, new RegExp(env.SHOPIFY_CLIENT_SECRET));
 });
-
