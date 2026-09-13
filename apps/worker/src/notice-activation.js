@@ -30,14 +30,20 @@ function installActivationCheck(doc, bridge, classify) {
     button.disabled = true;
     output.textContent = 'Consultando el tema publicado…';
     let timer;
+    output.dataset.esgActivationDiagnostic = 'pending';
     try {
-      if (typeof bridge?.app?.extensions !== 'function') throw Error('API_UNAVAILABLE');
+      if (typeof bridge?.app?.extensions !== 'function') { output.dataset.esgActivationDiagnostic = 'api_unavailable'; throw Error('API_UNAVAILABLE'); }
       const extensions = await Promise.race([
         bridge.app.extensions(),
-        new Promise((_, reject) => { timer = setTimeout(() => reject(Error('TIMEOUT')), 10000); })
+        new Promise((_, reject) => { timer = setTimeout(() => { output.dataset.esgActivationDiagnostic = 'timeout'; reject(Error('TIMEOUT')); }, 10000); })
       ]);
       output.textContent = messages[classify(extensions)] ?? messages.unknown;
+      // Fixed, non-sensitive diagnostics for DEV inspection. Never include raw API data.
+      const matching = Array.isArray(extensions) ? extensions.filter(e => e?.type === 'theme_app_extension' && e.handle === 'eu-store-guard') : [];
+      const blocks = matching.length === 1 && Array.isArray(matching[0].activations) ? matching[0].activations.filter(b => b?.handle === 'guarantee-notice') : [];
+      output.dataset.esgActivationDiagnostic = !Array.isArray(extensions) ? 'invalid_response' : matching.length === 0 ? 'extension_absent' : matching.length !== 1 ? 'extension_ambiguous' : blocks.length === 0 ? 'block_absent' : blocks.length !== 1 ? 'block_ambiguous' : classify(extensions) === 'unknown' ? 'unexpected_placement' : 'classified';
     } catch {
+      if (output.dataset.esgActivationDiagnostic === 'pending') output.dataset.esgActivationDiagnostic = 'api_failed';
       output.textContent = messages.unknown;
     } finally {
       clearTimeout(timer);

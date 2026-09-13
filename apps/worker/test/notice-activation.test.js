@@ -46,7 +46,7 @@ test('missing, malformed and contradictory observations never count as active', 
 });
 
 function browser(bridge, timers = { setTimeout, clearTimeout }) {
-  const listeners = {}, button = { disabled: false, addEventListener: (name, fn) => { listeners[name] = fn; } }, output = { textContent: '' };
+  const listeners = {}, button = { disabled: false, addEventListener: (name, fn) => { listeners[name] = fn; } }, output = { textContent: '', dataset: {} };
   runInNewContext(activationScript, { document: { querySelector: selector => selector === '#check-activation' ? button : output }, shopify: bridge, ...timers });
   return { button, output, click: listeners.click };
 }
@@ -59,6 +59,7 @@ test('served browser code performs a read-only query and retains the public-veri
   assert.equal(calls, 1); assert.equal(ui.button.disabled, false);
   assert.match(ui.output.textContent, /activado en el tema publicado/);
   assert.match(ui.output.textContent, /no confirma que se muestre/);
+  assert.equal(ui.output.dataset.esgActivationDiagnostic, 'classified');
 });
 
 test('rechecking clears stale success before waiting and after a failed query', async () => {
@@ -77,7 +78,17 @@ test('rechecking clears stale success before waiting and after a failed query', 
 test('missing App Bridge and timed-out queries stay unknown and allow retry', async () => {
   const absent = browser(undefined); await absent.click();
   assert.match(absent.output.textContent, /No se ha podido confirmar/);
+  assert.equal(absent.output.dataset.esgActivationDiagnostic, 'api_unavailable');
   const timed = browser({ app: { extensions: () => new Promise(() => {}) } }, { setTimeout: fn => { queueMicrotask(fn); return 1; }, clearTimeout: () => {} });
   await timed.click(); assert.equal(timed.button.disabled, false);
   assert.match(timed.output.textContent, /No se ha podido confirmar/);
+  assert.equal(timed.output.dataset.esgActivationDiagnostic, 'timeout');
+});
+
+test('diagnostic distinguishes missing block and invalid shape without exposing response data', async () => {
+  const missing = browser({ app: { extensions: async () => [{ ...fixture()[0], activations: [] }] } });
+  await missing.click(); assert.equal(missing.output.dataset.esgActivationDiagnostic, 'block_absent');
+  const bad = browser({ app: { extensions: async () => ({ private: 'must-not-leak' }) } });
+  await bad.click(); assert.equal(bad.output.dataset.esgActivationDiagnostic, 'invalid_response');
+  assert.doesNotMatch(JSON.stringify(bad.output), /must-not-leak/);
 });
