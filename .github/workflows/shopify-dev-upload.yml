@@ -43,3 +43,4 @@ jobs:
 # DEV inspection candidate: explicit editor-only preview; no public state override.
 # DEV flow-layout comparison: inline remains review_required and publicly blocked.
 # Keep the inspection label in normal flow too, so it cannot cover the candidate.
+# DEV section candidate: inspect header-group placement and five page types; editor only.

@@ -58,6 +58,17 @@ ${anchor}`);
     info:'Muestra una prueba visual aunque la configuración esté pendiente. No publica ni verifica el aviso.'});
   liquid = liquid.replace(schemaMatch[0], `{% schema %}\n${JSON.stringify(schema,null,2)}\n{% endschema %}`);
   files.set(key, Buffer.from(liquid));
+  // Independent section candidate, shipped ONLY by the DEV packager.
+  // Always closed outside the opted-in editor, including for LIVE core states.
+  const sectionSchema = {...schema, name:'Aviso sección DEV', target:'section',
+    settings:schema.settings.filter(setting => setting.id !== 'position')};
+  let sectionLiquid = liquid.replace(/\{% schema %\}[\s\S]*?\{% endschema %\}/,
+    `{% schema %}\n${JSON.stringify(sectionSchema,null,2)}\n{% endschema %}`);
+  sectionLiquid = sectionLiquid.replace("{%- assign position = block.settings.position | default: 'top-bar' -%}",
+    "{%- assign position = 'inline' -%}");
+  sectionLiquid = sectionLiquid.replace('{%- assign esg_dev_preview = false -%}',
+    '{%- assign can_render = false -%}\n{%- assign esg_dev_preview = false -%}');
+  files.set('blocks/guarantee-notice-section-dev.liquid', Buffer.from(sectionLiquid));
   files.set('shopify.extension.toml', Buffer.from('name = "EU Store Guard DEV"\ntype = "theme"\nhandle = "eu-store-guard"\n'));
   const total = [...files.values()].reduce((n, b) => n + b.length, 0);
   if (total > 10_000_000) throw new Error(`Extension exceeds conservative 10 MB limit: ${total}`);

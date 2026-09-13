@@ -13,6 +13,25 @@ const block = readFileSync(join(target, 'extensions/eu-store-guard/blocks/guaran
 const liquid = new Liquid({root:join(target,'extensions/eu-store-guard/snippets'),extname:'.liquid'});
 for (const filter of ['asset_url','stylesheet_tag','script_tag','t']) liquid.registerFilter(filter, x => x);
 const render = (locale, status='CONFIGURED') => liquid.parseAndRender(block, {request:{locale:{iso_code:locale}},block:{id:'test'},shop:{metafields:{eu_store_guard:{notice_status:{value:status}}}}});
+test('section candidate renders only in opted-in DEV editor and preserves independent IDs', async () => {
+  const source=readFileSync(join(target,'extensions/eu-store-guard/blocks/guarantee-notice-section-dev.liquid'),'utf8');
+  const schema=JSON.parse(source.match(/{% schema %}([\s\S]*?){% endschema %}/)[1]);
+  assert.equal(schema.target,'section');
+  assert.equal(schema.settings.some(s=>s.id==='position'),false);
+  const template=source.replace(/{% schema %}[\s\S]*?{% endschema %}/,'');
+  const context={request:{design_mode:true,locale:{iso_code:'es'}},block:{id:'section-1',settings:{esg_dev_preview:true}},shop:{permanent_domain:'eu-store-guard-dev.myshopify.com',metafields:{eu_store_guard:{notice_status:{value:'NEEDS_INFORMATION'}}}}};
+  const html=await liquid.parseAndRender(template,context);
+  assert.match(html,/data-esg-position="inline"/);
+  assert.match(html,/aria-controls="esg-notice-panel-section-1"/);
+  assert.match(html,/id="esg-notice-panel-section-1"/);
+  assert.match(html,/data-esg-status="NEEDS_INFORMATION"/);
+  for(const status of ['NEEDS_INFORMATION','CONFIGURED','LIVE_PARTIAL','LIVE_VERIFIED']) {
+    for(const mutate of [c=>{c.request.design_mode=false;},c=>{c.request.design_mode='true';},c=>{c.shop.permanent_domain='other.myshopify.com';},c=>{c.block.settings.esg_dev_preview=false;},c=>{c.request.locale.iso_code='en';}]) {
+      const c=structuredClone(context); c.shop.metafields.eu_store_guard.notice_status.value=status; mutate(c);
+      assert.equal((await liquid.parseAndRender(template,c)).trim(),'');
+    }
+  }
+});
 test('DEV package stays below limit and includes exactly three unchanged official assets', () => {
   assert.ok(report.extensionBytes < 10_000_000);
   assert.equal(Object.keys(report.officialAssets).length, 3);
