@@ -3,13 +3,13 @@
 .esg-notice__trigger, .esg-garan__nested { cursor: pointer; background: none; border: 1px solid currentColor; border-radius: 4px; padding: .4em .8em; font: inherit; font-size: .9em; }
 .esg-notice__panel, .esg-garan__panel { position: absolute; z-index: 9999; background: #fff; border: 1px solid #d0d0d0; border-radius: 6px; padding: 1em; box-shadow: 0 4px 16px rgba(0,0,0,.15); max-width: 420px; }
 /* Los assets oficiales se escalan proporcionalmente y sin filtros: prohibido alterarlos.
-   height:auto preserva el ratio declarado en width/height, que procede del viewBox oficial. */
+   El tamaño de presentación es explícito; width/height aportan la proporción. */
 .esg-notice__asset, .esg-garan__asset, .esg-garan__nested-asset { display: block; max-width: 100%; height: auto; filter: none !important; }
 /* El aviso oficial es un A4 (595x842). Se limita su altura en pantalla sin recortarlo ni deformarlo. */
 .esg-notice__asset { max-height: 70vh; width: auto; }
-.esg-garan__asset { max-width: 180px; }
+.esg-garan__asset { width: 180px; max-width: 100%; }
 .esg-garan { display: inline-block; }
-.esg-garan__nested-asset { max-height: 2.5em; width: auto; vertical-align: middle; }
+.esg-garan__nested-asset { width: 160px; max-width: 100%; height: auto; vertical-align: middle; }
 .esg-garan__years { margin-left: .4em; }
 .esg-garan__data { display: grid; grid-template-columns: auto 1fr; gap: .2em .8em; margin: .8em 0 0; font-size: .9em; }
 .esg-garan__data dt { font-weight: 600; }

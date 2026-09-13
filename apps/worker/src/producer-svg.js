@@ -19,6 +19,14 @@ export function exactRatio(width, height) {
   if (a / d > 100000n || b / d > 100000n) fail();
   return { width: Number(a / d), height: Number(b / d) };
 }
+// Preserve whole CSS-pixel dimensions when available; otherwise encode the exact
+// ratio. The storefront sets display width explicitly, independently of this pair.
+function htmlDimensions(width, height) {
+  const [w, wd] = decimal(width), [h, hd] = decimal(height);
+  if (!w || !h || w > 100000n * wd || h > 100000n * hd) fail();
+  if (w % wd === 0n && h % hd === 0n) return { width: Number(w / wd), height: Number(h / hd) };
+  return exactRatio(width, height);
+}
 export function inspectSvg(input) {
   if (!(input instanceof Uint8Array) || !input.length || input.length > MAX_BYTES) fail();
   const bytes = new Uint8Array(input); // Own the exact bytes through every await.
@@ -46,18 +54,26 @@ export function inspectSvg(input) {
   if (!root || depth !== 0) fail();
   const attrs = root.attributes;
   const vb = attrs.viewBox?.value;
-  let dimensions;
+  let viewBoxDimensions;
   if (vb !== undefined) {
     const p = vb.trim().split(/[\s,]+/);
     if (p.length !== 4 || !p.slice(0, 2).every(x => /^-?\d+(?:\.\d{1,6})?$/.test(x))) fail();
-    dimensions = exactRatio(p[2], p[3]);
-  } else {
+    // The origin translates the internal coordinate system, not the aspect ratio.
+    viewBoxDimensions = htmlDimensions(p[2], p[3]);
+  }
+  let dimensions;
+  if (attrs.width !== undefined || attrs.height !== undefined) {
     const length = value => {
       const m = /^(\d+(?:\.\d{1,6})?)(px)?$/.exec(value ?? '');
       if (!m) fail();
       return m[1];
     };
-    dimensions = exactRatio(length(attrs.width?.value), length(attrs.height?.value));
+    // Two explicit absolute lengths define the SVG viewport, even with viewBox.
+    // Partial, percentage and physical-unit sizes are outside this import profile.
+    dimensions = htmlDimensions(length(attrs.width?.value), length(attrs.height?.value));
+  } else {
+    if (!viewBoxDimensions) fail();
+    dimensions = viewBoxDimensions;
   }
   return { bytes, ...dimensions };
 }

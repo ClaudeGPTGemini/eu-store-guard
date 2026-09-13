@@ -11,7 +11,7 @@ const args = { ownerId: 'gid://shopify/Product/1', full: svg(''), nested: svg(''
 test('XML parser uses actual root, exact ratios and complete document', () => {
   assert.deepEqual(exactRatio('1.4','1'), {width:7,height:5});
   const commented = new TextEncoder().encode('<!-- <svg viewBox="0 0 1 1"/> -->'+new TextDecoder().decode(svg('')));
-  assert.equal(inspectSvg(commented).width,5);
+  assert.equal(inspectSvg(commented).width,400);
   for(const text of ['<html><svg viewBox="0 0 1 1"/></html>', '<svg xmlns="http://www.w3.org/2000/svg" width="10cm" height="10mm"/>', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><g></svg>', '<!DOCTYPE svg><svg/>']) assert.throws(()=>inspectSvg(new TextEncoder().encode(text)));
   for(const body of [' '.repeat(8100)+'<image href="https://example.com/x"/>','<script/>','<style/>','<g onclick="x"/>','<g xmlns="http://www.w3.org/2001/XInclude"/>','<rect fill="url(https://example.com/x)"/>']) assert.throws(()=>inspectSvg(svg(body)));
   assert.throws(()=>inspectSvg(new Uint8Array(2_000_001)));
@@ -44,7 +44,7 @@ test('import blocks first, uploads exact bytes, removes legacy, and commits pair
   assert.deepEqual(f.calls,['BLOCKED','upload','upload','delete','READY']);
   assert.equal(f.state().state,'READY');
   assert.deepEqual(f.files.get(f.state().full.url),args.full);
-  assert.equal(f.state().full.width,5);
+  assert.equal(f.state().full.width,400);
 });
 test('invalid input and each failed phase retain persisted BLOCKED',async()=>{
   const engine = new Liquid();for(const filter of ['asset_url','t'])engine.registerFilter(filter,x=>x);
@@ -63,7 +63,7 @@ test('successful persisted envelope renders uploaded pair with extracted ratio',
   const engine=new Liquid();for(const filter of ['asset_url','t'])engine.registerFilter(filter,x=>x);
   const template=readFileSync(new URL('../../../extensions/eu-store-guard/blocks/garan-label.liquid',import.meta.url),'utf8').split('{% schema %}')[0];
   const html=engine.parseAndRenderSync(template,{block:{id:'test'},product:{metafields:{eu_store_guard:{garan_status:{value:'CONFIGURED'},garan_duration_years:{value:3},garan_assets_v1:{type:'json',value:f.state()}}}}});
-  assert.equal((html.match(/width="5" height="4"/g)||[]).length,2);
+  assert.equal((html.match(/width="400" height="320"/g)||[]).length,2);
   assert.ok(html.includes(f.state().full.url));assert.ok(html.includes(f.state().nested.url));
   assert.doesNotMatch(html,/garan-rgb.svg|garan-nested-rgb.svg/);
 });

@@ -1,4 +1,4 @@
-# Contrato de publicación — candidata v15, pendiente de revisión
+# Contrato de publicación — candidata v16, pendiente de revisión
 
 El core no cambia: solo CONFIGURED, LIVE_PARTIAL y LIVE_VERIFIED permiten publicar.
 Los avisos no hacen fallback de idioma. Esta entrega no implementa el cron de
@@ -15,8 +15,10 @@ El objeto agrupa las dos variantes del productor:
 - operation: identificador de operación.
 - full y nested: obligatorios cuando READY; cada uno contiene url, width, height,
   sha256 y fileId. La URL procede del CDN Shopify y el ID de GenericFile.
-- width y height: enteros 1..100000 que representan la proporción exacta del SVG,
-  no tamaño físico ni tamaño de pantalla.
+- width y height: enteros 1..100000. Se conservan las dimensiones enteras de la
+  raíz (px o sin unidad); si no existen se usan las extensiones del viewBox.
+  Para valores fraccionarios se guarda un par proporcional exacto, sin redondeo.
+  El tamaño de pantalla se controla explícitamente en CSS.
 - sha256: 64 caracteres hexadecimales del archivo servido.
 
 Ambas variantes son obligatorias en este perfil inicial. No se completa una pareja
@@ -57,9 +59,18 @@ Entrada: bytes UTF-8, nunca URL o dimensiones aportadas. saxes analiza el XML
 completo. Se rechazan DTD, instrucciones de procesamiento, namespaces ajenos,
 referencias externas, estilos y elementos fuera del perfil estático permitido.
 Límite de 2 MB y 128 niveles. No es un sanitizador universal ni acepta cualquier SVG.
-Decimales de hasta seis posiciones; sin viewBox solo px o sin unidad. Se conserva
-la proporción mediante BigInt, sin redondear ni modificar los bytes originales.
+Decimales de hasta seis posiciones. Si hay width o height explícitos en la raíz,
+se exigen ambos en px o sin unidad y se priorizan sobre viewBox. Se rechazan
+dimensiones parciales, porcentajes y unidades físicas, incluso con viewBox.
+Sin dimensiones explícitas, viewBox aporta la proporción, no una medida intrínseca
+en píxeles. El origen x/y (incluido un desplazamiento) no cambia sus extensiones.
+Se conserva la proporción mediante BigInt, sin redondear ni modificar los bytes.
 Un archivo fuera del perfil se rechaza.
+
+CSS fija el ancho del GARAN completo en 180px y el anidado en 160px, limitados al
+100% del contenedor y con height:auto. Así un par proporcional pequeño no produce
+una imagen microscópica, ni uno grande una imagen desbordada. Estos tamaños son
+decisiones de presentación DEV, no una certificación de prominencia normativa.
 
 Se usan stagedUploadsCreate y fileCreate como GenericFile, se espera READY y se
 obtiene la URL de Shopify. Se vuelve a descargar y comparar su hash antes de
