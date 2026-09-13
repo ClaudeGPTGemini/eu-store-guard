@@ -42,7 +42,8 @@ export function packageDev({ locales = ['es'], output, source = join(root, 'exte
   // DEV-only, explicit editor preview. Never writes or fabricates a core state.
   // All three gates are server-rendered; query parameters cannot enable it.
   liquid = liquid.replace(anchor, `{%- assign esg_dev_preview = false -%}
-{%- if request.design_mode == true and shop.permanent_domain == 'eu-store-guard-dev.myshopify.com' and block.settings.esg_dev_preview == true and position == 'top-bar' and supported -%}
+{%- assign esg_preview_positions = 'top-bar,inline' | split: ',' -%}
+{%- if request.design_mode == true and shop.permanent_domain == 'eu-store-guard-dev.myshopify.com' and block.settings.esg_dev_preview == true and esg_preview_positions contains position and supported -%}
   {%- assign esg_dev_preview = true -%}
   {%- assign can_render = true -%}
 {%- endif -%}

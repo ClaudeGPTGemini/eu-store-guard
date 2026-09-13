@@ -45,3 +45,21 @@ test('DEV preview requires editor, exact development shop and explicit boolean o
   const source=readFileSync(new URL('../extensions/eu-store-guard/blocks/guarantee-notice.liquid',import.meta.url),'utf8');
   assert.doesNotMatch(source,/esg_dev_preview/);
 });
+
+test('end-of-document candidate has a native link but cannot publish through the preview switch', async () => {
+  const context={request:{design_mode:true,locale:{iso_code:'es'}},block:{id:'end-preview',settings:{position:'inline',esg_dev_preview:true}},shop:{permanent_domain:'eu-store-guard-dev.myshopify.com',metafields:{eu_store_guard:{notice_status:{value:'NEEDS_INFORMATION'}}}}};
+  const html=await liquid.parseAndRender(block,context);
+  assert.match(html,/data-esg-position="inline"/);
+  assert.match(html,/<a href="notice-es-rgb.svg" class="esg-notice__trigger"/);
+  assert.match(html,/data-esg-dev-preview="editor-only"/);
+  assert.match(html,/data-esg-status="NEEDS_INFORMATION"/);
+  for (const status of ['NEEDS_INFORMATION','CONFIGURED','LIVE_VERIFIED']) {
+    const c=structuredClone(context); c.request.design_mode=false;
+    c.shop.metafields.eu_store_guard.notice_status.value=status;
+    assert.equal((await liquid.parseAndRender(block,c)).trim(),'');
+  }
+  const css=readFileSync(join(target,'extensions/eu-store-guard/assets/eu-store-guard.css'),'utf8');
+  const candidate=css.match(/\.esg-notice\[data-esg-position="inline"\]\s*\{([^}]+)\}/)[1];
+  assert.match(candidate,/position:\s*static/);
+  assert.doesNotMatch(candidate,/fixed|absolute|sticky|transform|order\s*:/);
+});

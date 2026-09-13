@@ -41,3 +41,4 @@ jobs:
           node .scratch/shopify-tools/node_modules/@shopify/cli/bin/run.js app deploy --path .scratch/shopify-dev-es --config dev --no-release --no-color
 # Deployment request: audited v24, Spanish DEV candidate; release remains a separate DEV action.
 # DEV inspection candidate: explicit editor-only preview; no public state override.
+# DEV flow-layout comparison: inline remains review_required and publicly blocked.
