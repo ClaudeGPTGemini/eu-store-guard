@@ -3,6 +3,7 @@ import { loadRulesFromObjects, activeRules, evaluate } from "./core-bundle.js";
 import { completeness, COMPLETENESS_DISCLAIMER } from "@eu-store-guard/core/completeness";
 import { RULES, ACTIVATIONS } from "./rules-bundle.js";
 import { guardInternalRequest } from "./internal-auth.js";
+import { handleNoticeApp } from "./notice-app.js";
 
 const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
 const rules = loadRulesFromObjects(RULES);
@@ -11,6 +12,7 @@ const MAX_BODY_BYTES = 128 * 1024;
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname.startsWith('/app')) return handleNoticeApp(request, env);
 
     // Publico. Solo liveness: sin version del core, sin numero de reglas, sin entorno ni configuracion.
     if (url.pathname === "/health") return json({ ok: true });
