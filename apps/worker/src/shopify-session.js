@@ -36,22 +36,24 @@ export async function verifySession(token, settings, now = Math.floor(Date.now()
   } catch { throw new AppError('INVALID_SESSION', 401); }
 }
 
-export async function onlineSession(request, env, fetchImpl = fetch) {
+export async function onlineSession(request, env, fetchImpl = (input, init) => fetch(input, init)) {
   const settings = appSettings(env);
   const auth = request.headers.get('authorization') ?? '';
   if (!auth.startsWith('Bearer ')) throw new AppError('INVALID_SESSION', 401);
   const token = auth.slice(7);
   const identity = await verifySession(token, settings);
-  const response = await fetchImpl(`https://${identity.shop}/admin/oauth/access_token`, {
+  let response;
+  try { response = await fetchImpl(`https://${identity.shop}/admin/oauth/access_token`, {
     method: 'POST', redirect: 'error', signal: AbortSignal.timeout(15000),
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ client_id: settings.clientId, client_secret: settings.secret,
       grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange', subject_token: token,
       subject_token_type: 'urn:ietf:params:oauth:token-type:id_token',
       requested_token_type: 'urn:shopify:params:oauth:token-type:online-access-token' })
-  });
+  }); } catch { throw new AppError('SHOPIFY_AUTH_UNREACHABLE', 502); }
   if (!response.ok) throw new AppError('SHOPIFY_AUTH_FAILED', 502);
-  const data = await response.json();
+  let data;
+  try { data = await response.json(); } catch { throw new AppError('SHOPIFY_AUTH_INVALID_RESPONSE', 502); }
   if (typeof data.access_token !== 'string' || !data.access_token || !Number.isFinite(data.expires_in) || data.expires_in <= 0 ||
       String(data.associated_user?.id) !== identity.userId || data.associated_user?.account_owner !== true) {
     throw new AppError('SHOP_OWNER_REQUIRED', 403);

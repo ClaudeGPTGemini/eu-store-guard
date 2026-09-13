@@ -1,11 +1,14 @@
 import { AppError } from './shopify-session.js';
-export function noticeClient(session, fetchImpl = fetch) {
+export function noticeClient(session, fetchImpl = (input, init) => fetch(input, init)) {
   const endpoint = `https://${session.shop}/admin/api/2026-07/graphql.json`;
   async function graph(query, variables = {}) {
-    const r = await fetchImpl(endpoint, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(15000),
+    let r;
+    try { r = await fetchImpl(endpoint, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(15000),
       headers: { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': session.token }, body: JSON.stringify({ query, variables }) });
+    } catch { throw new AppError('SHOPIFY_ADMIN_UNREACHABLE', 502); }
     if (!r.ok) throw new AppError('SHOPIFY_REQUEST_FAILED', 502);
-    const body = await r.json();
+    let body;
+    try { body = await r.json(); } catch { throw new AppError('SHOPIFY_ADMIN_INVALID_RESPONSE', 502); }
     if (body.errors?.length || !body.data) throw new AppError('SHOPIFY_QUERY_REJECTED', 502);
     return body.data;
   }

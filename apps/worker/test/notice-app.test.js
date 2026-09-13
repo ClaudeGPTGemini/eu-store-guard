@@ -11,6 +11,15 @@ const settings = appSettings(env);
 const now = Math.floor(Date.now() / 1000);
 const claims = { aud: settings.clientId, dest: `https://${settings.shop}`, iss: `https://${settings.shop}/admin`, sub: '7', iat: now, nbf: now, exp: now + 60 };
 const b64 = v => Buffer.from(JSON.stringify(v)).toString('base64url');
+
+test('Shopify transport and non-JSON failures expose only fixed stage codes', async () => {
+  const token = await signed();
+  const request = new Request('https://worker.test/app/configuration', { headers: { Authorization: 'Bearer ' + token } });
+  await assert.rejects(onlineSession(request, env, async () => { throw Error('private upstream detail'); }), { message: 'SHOPIFY_AUTH_UNREACHABLE' });
+  await assert.rejects(onlineSession(request, env, async () => new Response('<html>private</html>')), { message: 'SHOPIFY_AUTH_INVALID_RESPONSE' });
+  await assert.rejects(noticeClient({ shop: settings.shop, token: 'fixture' }, async () => { throw Error('private'); }).read(), { message: 'SHOPIFY_ADMIN_UNREACHABLE' });
+  await assert.rejects(noticeClient({ shop: settings.shop, token: 'fixture' }, async () => new Response('<html>private</html>')).read(), { message: 'SHOPIFY_ADMIN_INVALID_RESPONSE' });
+});
 async function signed(overrides = {}, header = { alg: 'HS256', typ: 'JWT' }) {
   const raw = b64(header) + '.' + b64({ ...claims, ...overrides });
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(settings.secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
