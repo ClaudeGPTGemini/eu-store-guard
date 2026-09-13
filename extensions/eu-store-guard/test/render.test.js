@@ -2,10 +2,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { Liquid } from "liquidjs";
 
 const B = new URL("../blocks/", import.meta.url);
-const engine = new Liquid({ strictFilters: false, strictVariables: false });
+const engine = new Liquid({ root: fileURLToPath(new URL("../snippets/", import.meta.url)), extname: ".liquid", strictFilters: false, strictVariables: false });
 // Filtros de Shopify usados por los bloques. Devuelven marcadores comprobables.
 engine.registerFilter("asset_url", (v) => `/assets/${v}`);
 engine.registerFilter("stylesheet_tag", (v) => `<link rel="stylesheet" href="${v}">`);

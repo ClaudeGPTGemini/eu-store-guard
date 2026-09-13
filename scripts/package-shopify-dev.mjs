@@ -11,6 +11,12 @@ export function packageDev({ locales = ['es'], output, source = join(root, 'exte
   if (!locales.length || locales.some(l => !/^[a-z]{2}$/.test(l))) throw new Error('Invalid locales');
   const manifestBytes = readFileSync(join(source, 'assets-manifest.json'));
   const manifest = JSON.parse(manifestBytes);
+  const transcription = JSON.parse(readFileSync(join(source, 'transcriptions/es.json')));
+  if (transcription.status !== 'visually-checked' ||
+      transcription.assetSha256 !== manifest.assets['notice-es-rgb.svg'].sha256 ||
+      transcription.transcriptSha256 !== sha(readFileSync(join(source, 'snippets/notice-transcript-es.liquid')))) {
+    throw new Error('Spanish transcription requires review against current asset');
+  }
   // Verify ALL approved originals, including languages omitted from this DEV package.
   for (const [name, entry] of Object.entries(manifest.assets)) {
     if (!/^[a-z-]+\.svg$/.test(name)) throw new Error('Invalid manifest path');
@@ -20,7 +26,7 @@ export function packageDev({ locales = ['es'], output, source = join(root, 'exte
   const selected = [...locales.map(l => `notice-${l}-rgb.svg`), 'garan-rgb.svg', 'garan-nested-rgb.svg'];
   if (selected.some(name => !manifest.assets[name])) throw new Error('Locale absent from approved manifest');
   const files = new Map();
-  for (const dir of ['blocks', 'locales']) {
+  for (const dir of ['blocks', 'locales', 'snippets']) {
     for (const name of readdirSync(join(source, dir))) {
       if (!/^[a-zA-Z0-9._-]+$/.test(name)) throw new Error('Invalid source path');
       files.set(`${dir}/${name}`, readFileSync(join(source, dir, name)));

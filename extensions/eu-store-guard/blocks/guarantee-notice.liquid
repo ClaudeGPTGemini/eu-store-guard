@@ -28,26 +28,23 @@
 
 {%- if can_render and supported -%}
   {%- assign notice_asset = 'notice-' | append: current | append: '-rgb.svg' -%}
-  <div class="esg-notice" data-esg-locale="{{ current }}" data-esg-rule="EU_LEGAL_GUARANTEE_NOTICE_2026_01" data-esg-status="{{ notice_status | escape }}">
-    <button type="button" class="esg-notice__trigger" aria-expanded="false" aria-controls="esg-notice-panel-{{ block.id }}">
+  {%- assign position = block.settings.position | default: 'bottom-right' -%}
+  <div class="esg-notice" data-esg-position="{{ position | escape }}" data-esg-locale="{{ current }}" data-esg-rule="EU_LEGAL_GUARANTEE_NOTICE_2026_01" data-esg-status="{{ notice_status | escape }}" data-esg-transcription="{% if current == 'es' %}visually-checked{% else %}pending{% endif %}">
+    <a href="{{ notice_asset | asset_url }}" class="esg-notice__trigger" aria-haspopup="dialog" aria-expanded="false" aria-controls="esg-notice-panel-{{ block.id }}">
       {{ 'guarantee.open' | t }}
-    </button>
-    <div id="esg-notice-panel-{{ block.id }}" class="esg-notice__panel" hidden>
-      {%- comment -%}
-        Dimensiones intrinsecas del archivo oficial (viewBox 0 0 595.28 841.89, A4): par entero equivalente, proporcion exacta.
-        Se declaran para que el navegador reserve el espacio y no salte el layout; el CSS lo
-        escala manteniendo la proporcion. Prohibido alterar el ratio del asset oficial.
-      {%- endcomment -%}
-      <img class="esg-notice__asset"
-           src="{{ notice_asset | asset_url }}"
-           width="59528" height="84189"
-           alt="{{ 'guarantee.title' | t }}"
-           loading="lazy"
-           decoding="async">
-      <a class="esg-notice__link"
-         href="https://europa.eu/youreurope/citizens/consumers/shopping/guarantees-returns/index_{{ current }}.htm"
-         target="_blank" rel="noopener">{{ 'guarantee.learn_more' | t }}</a>
-    </div>
+    </a>
+    <dialog id="esg-notice-panel-{{ block.id }}" class="esg-notice__dialog" aria-labelledby="esg-notice-title-{{ block.id }}">
+      <header class="esg-notice__header">
+        <h2 id="esg-notice-title-{{ block.id }}" tabindex="-1" autofocus>{{ 'guarantee.title' | t }}</h2>
+        <form method="dialog"><button type="submit" class="esg-notice__close">{{ 'guarantee.close' | t }}</button></form>
+      </header>
+      <div class="esg-notice__content">
+        <img class="esg-notice__asset" src="{{ notice_asset | asset_url }}" width="59528" height="84189" {% if current == 'es' %}alt="" aria-hidden="true"{% else %}alt="{{ 'guarantee.image_description' | t | escape }}"{% endif %} decoding="async">
+        <a href="{{ notice_asset | asset_url }}" target="_blank" rel="noopener">{{ 'guarantee.enlarge' | t }}</a>
+        {%- if current == 'es' -%}{% render 'notice-transcript-es' %}{%- endif -%}
+        <a class="esg-notice__link" href="https://europa.eu/youreurope/citizens/consumers/shopping/guarantees-returns/index_{{ current }}.htm" target="_blank" rel="noopener">{{ 'guarantee.learn_more' | t }}</a>
+      </div>
+    </dialog>
   </div>
 {%- elsif can_render == false -%}
   {%- comment -%} Estado no publicable: no se pinta nada. La retraccion es inmediata en el siguiente render. {%- endcomment -%}

@@ -62,7 +62,7 @@ test("el CSS no puede alterar el asset oficial", () => {
 test("accesibilidad minima: los desplegables son botones con aria y foco por teclado", () => {
   for (const src of [garan, notice]) {
     if (!src.includes("aria-expanded")) continue;
-    assert.match(src, /<button type="button"/, "el disparador debe ser un boton, no un div");
+    assert.match(src, /<button type="button"|<a href="\{\{ notice_asset \| asset_url \}\}"/, "disparador nativo: boton GARAN o enlace de aviso");
     assert.match(src, /aria-controls=/);
   }
   const js = readFileSync(new URL("../assets/eu-store-guard.js", import.meta.url), "utf8");

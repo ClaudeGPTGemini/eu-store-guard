@@ -2,8 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { Liquid } from 'liquidjs';
+import { fileURLToPath } from 'node:url';
 
-const engine = new Liquid();for(const filter of ['asset_url','t'])engine.registerFilter(filter,x=>x);
+const engine = new Liquid({root:fileURLToPath(new URL('../snippets/',import.meta.url)),extname:'.liquid'});for(const filter of ['asset_url','t'])engine.registerFilter(filter,x=>x);
 const source = name => readFileSync(new URL(`../blocks/${name}.liquid`,import.meta.url),'utf8').split('{% schema %}')[0];
 const tpl = source('garan-label');
 const asset = {url:'https://cdn.shopify.com/producer.svg',width:5,height:4,sha256:'a'.repeat(64),fileId:'gid://shopify/GenericFile/1'};

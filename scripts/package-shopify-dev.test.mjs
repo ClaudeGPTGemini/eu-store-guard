@@ -10,7 +10,7 @@ const parent = mkdtempSync(join(tmpdir(), 'esg-package-test-'));
 const target = join(parent, 'es');
 const report = packageDev({ output: target });
 const block = readFileSync(join(target, 'extensions/eu-store-guard/blocks/guarantee-notice.liquid'), 'utf8').replace(/{% schema %}[\s\S]*?{% endschema %}/g, '');
-const liquid = new Liquid();
+const liquid = new Liquid({root:join(target,'extensions/eu-store-guard/snippets'),extname:'.liquid'});
 for (const filter of ['asset_url','stylesheet_tag','script_tag','t']) liquid.registerFilter(filter, x => x);
 const render = (locale, status='CONFIGURED') => liquid.parseAndRender(block, {request:{locale:{iso_code:locale}},block:{id:'test'},shop:{metafields:{eu_store_guard:{notice_status:{value:status}}}}});
 test('DEV package stays below limit and includes exactly three unchanged official assets', () => {
