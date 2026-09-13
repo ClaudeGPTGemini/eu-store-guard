@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           persist-credentials: false
-          ref: 05cedc78c2eb2f98ef1e3c468d4df448af788396
+          ref: 2298bf1f88a94c4c877b3e4f454691df1ec2db4f
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: 22
@@ -39,4 +39,4 @@ jobs:
           SHOPIFY_APP_AUTOMATION_TOKEN: ${{ secrets.SHOPIFY_DEV_AUTOMATION_TOKEN }}
         run: |
           test -n "$SHOPIFY_APP_AUTOMATION_TOKEN" || { echo 'Missing SHOPIFY_DEV_AUTOMATION_TOKEN'; exit 1; }
-          node .scratch/shopify-tools/node_modules/@shopify/cli/bin/run.js app deploy --path .scratch/shopify-dev-es --config dev --version eu-store-guard-dev-v16 --no-release --no-color
+          node .scratch/shopify-tools/node_modules/@shopify/cli/bin/run.js app deploy --path .scratch/shopify-dev-es --config dev --version eu-store-guard-dev-v18 --no-release --no-color
