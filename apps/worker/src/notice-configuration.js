@@ -15,6 +15,7 @@ export function configurationDecision(input, snapshot, deployment) {
   // Explicit migration: old deployment evidence cannot enable the new mechanism.
   if (deployment?.entryPoint !== 'header-section' || deployment.shop !== snapshot.shop.myshopifyDomain ||
       typeof deployment.themeId !== 'string' || !/^[1-9][0-9]*$/.test(deployment.themeId) ||
+      typeof deployment.sectionId !== 'string' || !/^sections--[1-9][0-9]*__[a-zA-Z0-9_-]+$/.test(deployment.sectionId) ||
       deployment.reviewScope !== 'editor-placement' || deployment.reviewRecord !== 'DEV-SECTION-COVERAGE.md') {
     return { status: 'NEEDS_INFORMATION', reasons: ['header_section_review_pending'] };
   }
@@ -31,7 +32,7 @@ export function configurationDecision(input, snapshot, deployment) {
   // CONFIGURED with failed configuration checks is not permission to publish.
   if (result.status !== 'CONFIGURED' || result.reasons.length) return { status: 'NEEDS_INFORMATION', reasons: ['core_configuration_rejected', ...result.reasons] };
   return { status: 'CONFIGURED', reasons: [], effectiveFrom: rule.effective_from, publicVerification: 'pending', evaluationLog: result.log,
-    presentation: {version:1,mechanism:'header-section',themeId:deployment.themeId,publicationReady:true,publicVerification:'pending'} };
+    presentation: {version:1,mechanism:'header-section',themeId:deployment.themeId,sectionId:deployment.sectionId,publicationReady:true,publicVerification:'pending'} };
 }
 
 export async function saveConfiguration(client, input, deployment, now = new Date()) {

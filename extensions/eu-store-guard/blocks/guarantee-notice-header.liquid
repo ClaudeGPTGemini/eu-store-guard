@@ -29,11 +29,11 @@
 {%- assign position = 'header-section' -%}
 {%- comment -%} Product policy v1: legacy positions require review, not a claim of legal prohibition. {%- endcomment -%}
 {%- assign presentation = shop.metafields.eu_store_guard.notice_presentation.value -%}
-{%- assign current_theme_id = theme.id | append: '' -%}
+{%- assign current_section_id = section.id | append: '' -%}
 {%- if shop.permanent_domain == 'eu-store-guard-dev.myshopify.com' -%}
-<span hidden data-esg-header-diagnostic="v1" data-state-ok="{{ can_render }}" data-binding-present="{% if presentation != nil %}true{% else %}false{% endif %}" data-version-ok="{% if presentation.version == 1 %}true{% else %}false{% endif %}" data-mechanism-ok="{% if presentation.mechanism == 'header-section' %}true{% else %}false{% endif %}" data-ready="{% if presentation.publicationReady == true %}true{% else %}false{% endif %}" data-theme-ok="{% if presentation.themeId == current_theme_id %}true{% else %}false{% endif %}" data-header-ok="{% if section.location == 'header' %}true{% else %}false{% endif %}"></span>
+<span hidden data-esg-header-diagnostic="v1" data-state-ok="{{ can_render }}" data-binding-present="{% if presentation != nil %}true{% else %}false{% endif %}" data-version-ok="{% if presentation.version == 1 %}true{% else %}false{% endif %}" data-mechanism-ok="{% if presentation.mechanism == 'header-section' %}true{% else %}false{% endif %}" data-ready="{% if presentation.publicationReady == true %}true{% else %}false{% endif %}" data-section-ok="{% if presentation.sectionId == current_section_id %}true{% else %}false{% endif %}"></span>
 {%- endif -%}
-{%- unless presentation.version == 1 and presentation.mechanism == 'header-section' and presentation.publicationReady == true and presentation.themeId == current_theme_id and section.location == 'header' -%}
+{%- unless presentation.version == 1 and presentation.mechanism == 'header-section' and presentation.publicationReady == true and presentation.sectionId == current_section_id -%}
   {%- assign can_render = false -%}
 {%- endunless -%}
 {%- if can_render and supported -%}
@@ -63,5 +63,5 @@
 {%- endif -%}
 
 {% schema %}
-{"name":"Aviso garantía (Header)","target":"section","javascript":"eu-store-guard.js","stylesheet":"eu-store-guard.css","settings":[{"type":"paragraph","content":"Añade esta sección al grupo Header. Guarda la configuración en la app. La presencia del bloque no confirma su visibilidad ni el cumplimiento de la tienda."}]}
+{"name":"Aviso garantía (Header)","target":"section","enabled_on":{"groups":["header"]},"javascript":"eu-store-guard.js","stylesheet":"eu-store-guard.css","settings":[{"type":"paragraph","content":"Añade esta sección al grupo Header. Guarda la configuración en la app. La presencia del bloque no confirma su visibilidad ni el cumplimiento de la tienda."}]}
 {% endschema %}

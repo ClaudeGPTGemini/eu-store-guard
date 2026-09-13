@@ -41,7 +41,7 @@ async function signed(overrides = {}, header = { alg: 'HS256', typ: 'JWT' }) {
 const input = { enabled: true, sellsGoodsToConsumers: true, marketCountry: 'ES', locale: 'es' };
 const snapshot = () => ({ shop: { id: 'gid://shopify/Shop/1', myshopifyDomain: settings.shop, notice: null }, currentAppInstallation: { id: 'gid://shopify/AppInstallation/2', config: null }, shopLocales: [{ locale: 'es', primary: true, published: true }] });
 const manifest = JSON.parse(readFileSync(new URL('../../../extensions/eu-store-guard/assets-manifest.json', import.meta.url)));
-const evidence = { reviewed: true, assetHash: manifest.assets['notice-es-rgb.svg'].sha256, officialHashes: [manifest.assets['notice-es-rgb.svg'].sha256], assetLocale: 'es', isRgb: true, entryPoint: 'header-section', shop: settings.shop, themeId:'159264309480', reviewScope:'editor-placement', reviewRecord:'DEV-SECTION-COVERAGE.md', interactionsToFullNotice: 1, yourEuropeLinkPresent: true };
+const evidence = { reviewed: true, assetHash: manifest.assets['notice-es-rgb.svg'].sha256, officialHashes: [manifest.assets['notice-es-rgb.svg'].sha256], assetLocale: 'es', isRgb: true, entryPoint: 'header-section', shop: settings.shop, themeId:'159264309480', sectionId:'sections--22066757075176__17893321078e794eb7', reviewScope:'editor-placement', reviewRecord:'DEV-SECTION-COVERAGE.md', interactionsToFullNotice: 1, yourEuropeLinkPresent: true };
 const reply = data => new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
 function fixture({ conflict = false, owner = true } = {}) {
   const writes = [], state = snapshot();

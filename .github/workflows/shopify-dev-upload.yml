@@ -47,3 +47,4 @@ jobs:
 # Add real Header section with atomic mechanism migration; retain inspection block and legacy embed.
 # Header block display name respects Shopify's 25-character limit.
 # DEV-only hidden boolean diagnostics identify a rejected runtime binding without exposing data.
+# Use supported section.id and schema header-group restriction; parent section.location is inaccessible.

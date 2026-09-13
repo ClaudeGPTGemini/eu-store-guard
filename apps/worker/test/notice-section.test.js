@@ -14,10 +14,13 @@ const engine=new Liquid({root:fileURLToPath(new URL('snippets/',extension)),extn
 for(const name of ['t','asset_url']) engine.registerFilter(name,x=>x);
 const snapshot={shop:{id:'gid://shopify/Shop/1',myshopifyDomain:'eu-store-guard-dev.myshopify.com'},currentAppInstallation:{id:'gid://shopify/AppInstallation/2'},shopLocales:[{locale:'es',primary:true,published:true}]};
 const hash=JSON.parse(readFileSync(new URL('assets-manifest.json',extension))).assets['notice-es-rgb.svg'].sha256;
-const evidence={reviewed:true,reviewScope:'editor-placement',reviewRecord:'DEV-SECTION-COVERAGE.md',shop:snapshot.shop.myshopifyDomain,themeId:'159264309480',entryPoint:'header-section',assetHash:hash,officialHashes:[hash],assetLocale:'es',isRgb:true,interactionsToFullNotice:1,yourEuropeLinkPresent:true};
+const evidence={reviewed:true,reviewScope:'editor-placement',reviewRecord:'DEV-SECTION-COVERAGE.md',shop:snapshot.shop.myshopifyDomain,themeId:'159264309480',sectionId:'sections--22066757075176__17893321078e794eb7',entryPoint:'header-section',assetHash:hash,officialHashes:[hash],assetLocale:'es',isRgb:true,interactionsToFullNotice:1,yourEuropeLinkPresent:true};
 const input={enabled:true,sellsGoodsToConsumers:true,marketCountry:'ES',locale:'es'};
 
 test('saved configuration drives real header HTML and atomically suppresses legacy embed',async()=>{
+  const schema=JSON.parse(readFileSync(new URL('blocks/guarantee-notice-header.liquid',extension),'utf8').match(/{% schema %}([\s\S]*?){% endschema %}/)[1]);
+  assert.deepEqual(schema.enabled_on,{groups:['header']});
+  assert.doesNotMatch(source('guarantee-notice-header'),/section\.location|theme\.id/);
   let written;
   const client=noticeClient({shop:snapshot.shop.myshopifyDomain,token:'fixture'},async(_url,options)=>{
     const body=JSON.parse(options.body);
@@ -27,17 +30,17 @@ test('saved configuration drives real header HTML and atomically suppresses lega
   });
   await saveConfiguration(client,input,evidence);
   const fields=Object.fromEntries(written.filter(f=>f.ownerId===snapshot.shop.id).map(f=>[f.key,{value:f.type==='json'?JSON.parse(f.value):f.value}]));
-  const context={shop:{metafields:{eu_store_guard:fields}},theme:{id:159264309480},section:{location:'header'},request:{locale:{iso_code:'es'},design_mode:false},block:{id:'real-header'}};
+  const context={shop:{metafields:{eu_store_guard:fields}},theme:{id:159264309480},section:{id:evidence.sectionId},request:{locale:{iso_code:'es'},design_mode:false},block:{id:'real-header'}};
   assert.match(await engine.parseAndRender(source('guarantee-notice-header'),context),/notice-es-rgb.svg/);
   assert.equal((await engine.parseAndRender(source('guarantee-notice'),context)).trim(),'');
-  for(const mutate of [c=>{c.theme.id=123;},c=>{c.section.location='template';},c=>{c.section.location='footer';},c=>{delete c.section.location;},c=>{c.shop.metafields.eu_store_guard.notice_presentation.value.publicationReady='true';},c=>{c.shop.metafields.eu_store_guard.notice_status.value='NEEDS_INFORMATION';},c=>{delete c.shop.metafields.eu_store_guard.notice_presentation;}]) {
+  for(const mutate of [c=>{c.section.id='sections--123__other';},c=>{c.section.id='template--123__main';},c=>{delete c.section.id;},c=>{c.shop.metafields.eu_store_guard.notice_presentation.value.publicationReady='true';},c=>{c.shop.metafields.eu_store_guard.notice_status.value='NEEDS_INFORMATION';},c=>{delete c.shop.metafields.eu_store_guard.notice_presentation;}]) {
     const c=structuredClone(context);mutate(c);
     assert.equal((await engine.parseAndRender(source('guarantee-notice-header'),c)).trim(),'');
   }
 });
 
 test('old, foreign or incomplete placement records cannot migrate into publication',()=>{
-  for(const override of [{entryPoint:'top-bar'},{shop:'other.myshopify.com'},{themeId:159264309480},{themeId:''},{reviewScope:'public-verified'},{reviewRecord:null},{reviewed:false}]) assert.equal(configurationDecision(input,snapshot,{...evidence,...override}).status,'NEEDS_INFORMATION');
+  for(const override of [{entryPoint:'top-bar'},{shop:'other.myshopify.com'},{themeId:159264309480},{themeId:''},{sectionId:''},{sectionId:'template--123__main'},{reviewScope:'public-verified'},{reviewRecord:null},{reviewed:false}]) assert.equal(configurationDecision(input,snapshot,{...evidence,...override}).status,'NEEDS_INFORMATION');
   const result=configurationDecision(input,snapshot,evidence);
   assert.equal(result.status,'CONFIGURED');assert.equal(result.publicVerification,'pending');
   assert.equal(result.evaluationLog.presentation.verification_reported,false);
