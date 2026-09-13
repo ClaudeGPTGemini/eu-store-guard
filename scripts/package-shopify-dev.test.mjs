@@ -33,6 +33,11 @@ test('section candidate renders only in opted-in DEV editor and preserves indepe
   }
 });
 test('DEV package stays below limit and includes exactly three unchanged official assets', () => {
+  for (const name of readdirSync(join(target,'extensions/eu-store-guard/blocks'))) {
+    const text=readFileSync(join(target,'extensions/eu-store-guard/blocks',name),'utf8');
+    const schema=JSON.parse(text.match(/{% schema %}([\s\S]*?){% endschema %}/)[1]);
+    assert.ok(schema.name.length<=25,`${name}: Shopify schema name limit`);
+  }
   assert.ok(report.extensionBytes < 10_000_000);
   assert.equal(Object.keys(report.officialAssets).length, 3);
   for (const name of Object.keys(report.officialAssets)) assert.deepEqual(readFileSync(join(target,'extensions/eu-store-guard/assets',name)),readFileSync(new URL(`../extensions/eu-store-guard/assets/${name}`,import.meta.url)));

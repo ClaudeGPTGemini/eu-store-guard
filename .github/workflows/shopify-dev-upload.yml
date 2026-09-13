@@ -45,3 +45,4 @@ jobs:
 # Keep the inspection label in normal flow too, so it cannot cover the candidate.
 # DEV section candidate: inspect header-group placement and five page types; editor only.
 # Add real Header section with atomic mechanism migration; retain inspection block and legacy embed.
+# Header block display name respects Shopify's 25-character limit.

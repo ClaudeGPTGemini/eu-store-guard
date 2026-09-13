@@ -52,7 +52,7 @@ function installActivationCheck(doc, bridge, classify) {
       output.dataset.esgLegacyEmbedActivation = embedState;
       output.textContent = sectionState === 'active'
         ? 'Shopify detecta el bloque de sección en el tema publicado. Aún no hemos confirmado que el aviso se muestre ni su ubicación, cobertura o accesibilidad.'
-        : 'Aún no hemos confirmado que el aviso se muestre. Añade Aviso de garantía (Header) al grupo Header. Esta consulta no comprueba los temas borrador.';
+        : 'Aún no hemos confirmado que el aviso se muestre. Añade Aviso garantía (Header) al grupo Header. Esta consulta no comprueba los temas borrador.';
       if (embedState === 'active') output.textContent += ' También se detecta el embed anterior: completa la migración al bloque de sección.';
       // Fixed, non-sensitive diagnostics for DEV inspection. Never include raw API data.
       if (Array.isArray(extensions)) {
