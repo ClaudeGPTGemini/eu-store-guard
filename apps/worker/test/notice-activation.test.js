@@ -92,3 +92,25 @@ test('diagnostic distinguishes missing block and invalid shape without exposing 
   await bad.click(); assert.equal(bad.output.dataset.esgActivationDiagnostic, 'invalid_response');
   assert.doesNotMatch(JSON.stringify(bad.output), /must-not-leak/);
 });
+
+test('empty and unmatched lists remain unknown with only count and theme presence exposed', async () => {
+  for (const [response, diagnostic, count, hasTheme] of [
+    [[], 'extensions_empty', '0', 'false'],
+    [[{handle:'private-handle',type:'ui_extension'}], 'handle_or_type_mismatch', '1', 'false'],
+    [[{handle:'private-handle',type:'theme_app_extension'}], 'handle_or_type_mismatch', '1', 'true'],
+    [[null], 'handle_or_type_mismatch', '1', 'false']
+  ]) {
+    const bridge = {app:{extensions:async()=>response}};
+    const ui = browser(bridge); await ui.click();
+    assert.equal(ui.output.dataset.esgActivationDiagnostic, diagnostic);
+    assert.equal(ui.output.dataset.esgExtensionCount, count);
+    assert.equal(ui.output.dataset.esgHasThemeExtension, hasTheme);
+    assert.match(ui.output.textContent, /No se ha podido confirmar/);
+    assert.doesNotMatch(JSON.stringify(ui.output), /private-handle/);
+    bridge.app.extensions = async()=>{throw Error('private-error');};
+    await ui.click();
+    assert.equal(ui.output.dataset.esgExtensionCount, undefined);
+    assert.equal(ui.output.dataset.esgHasThemeExtension, undefined);
+    assert.equal(ui.output.dataset.esgActivationDiagnostic, 'api_failed');
+  }
+});

@@ -31,6 +31,8 @@ function installActivationCheck(doc, bridge, classify) {
     output.textContent = 'Consultando el tema publicado…';
     let timer;
     output.dataset.esgActivationDiagnostic = 'pending';
+    delete output.dataset.esgExtensionCount;
+    delete output.dataset.esgHasThemeExtension;
     try {
       if (typeof bridge?.app?.extensions !== 'function') { output.dataset.esgActivationDiagnostic = 'api_unavailable'; throw Error('API_UNAVAILABLE'); }
       const extensions = await Promise.race([
@@ -39,9 +41,13 @@ function installActivationCheck(doc, bridge, classify) {
       ]);
       output.textContent = messages[classify(extensions)] ?? messages.unknown;
       // Fixed, non-sensitive diagnostics for DEV inspection. Never include raw API data.
+      if (Array.isArray(extensions)) {
+        output.dataset.esgExtensionCount = String(extensions.length);
+        output.dataset.esgHasThemeExtension = String(extensions.some(e => e?.type === 'theme_app_extension'));
+      }
       const matching = Array.isArray(extensions) ? extensions.filter(e => e?.type === 'theme_app_extension' && e.handle === 'eu-store-guard') : [];
       const blocks = matching.length === 1 && Array.isArray(matching[0].activations) ? matching[0].activations.filter(b => b?.handle === 'guarantee-notice') : [];
-      output.dataset.esgActivationDiagnostic = !Array.isArray(extensions) ? 'invalid_response' : matching.length === 0 ? 'extension_absent' : matching.length !== 1 ? 'extension_ambiguous' : blocks.length === 0 ? 'block_absent' : blocks.length !== 1 ? 'block_ambiguous' : classify(extensions) === 'unknown' ? 'unexpected_placement' : 'classified';
+      output.dataset.esgActivationDiagnostic = !Array.isArray(extensions) ? 'invalid_response' : extensions.length === 0 ? 'extensions_empty' : matching.length === 0 ? 'handle_or_type_mismatch' : matching.length !== 1 ? 'extension_ambiguous' : blocks.length === 0 ? 'block_absent' : blocks.length !== 1 ? 'block_ambiguous' : classify(extensions) === 'unknown' ? 'unexpected_placement' : 'classified';
     } catch {
       if (output.dataset.esgActivationDiagnostic === 'pending') output.dataset.esgActivationDiagnostic = 'api_failed';
       output.textContent = messages.unknown;
