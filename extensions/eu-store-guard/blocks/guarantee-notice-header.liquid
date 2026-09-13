@@ -30,6 +30,9 @@
 {%- comment -%} Product policy v1: legacy positions require review, not a claim of legal prohibition. {%- endcomment -%}
 {%- assign presentation = shop.metafields.eu_store_guard.notice_presentation.value -%}
 {%- assign current_theme_id = theme.id | append: '' -%}
+{%- if shop.permanent_domain == 'eu-store-guard-dev.myshopify.com' -%}
+<span hidden data-esg-header-diagnostic="v1" data-state-ok="{{ can_render }}" data-binding-present="{% if presentation != nil %}true{% else %}false{% endif %}" data-version-ok="{% if presentation.version == 1 %}true{% else %}false{% endif %}" data-mechanism-ok="{% if presentation.mechanism == 'header-section' %}true{% else %}false{% endif %}" data-ready="{% if presentation.publicationReady == true %}true{% else %}false{% endif %}" data-theme-ok="{% if presentation.themeId == current_theme_id %}true{% else %}false{% endif %}" data-header-ok="{% if section.location == 'header' %}true{% else %}false{% endif %}"></span>
+{%- endif -%}
 {%- unless presentation.version == 1 and presentation.mechanism == 'header-section' and presentation.publicationReady == true and presentation.themeId == current_theme_id and section.location == 'header' -%}
   {%- assign can_render = false -%}
 {%- endunless -%}
