@@ -48,7 +48,7 @@ export function packageDev({ locales = ['es'], output, source = join(root, 'exte
   {%- assign can_render = true -%}
 {%- endif -%}
 {%- if esg_dev_preview -%}
-  <aside data-esg-dev-preview="editor-only" style="position:fixed;bottom:0;left:0;z-index:1001;background:#fff;color:#172b4d;border:2px solid #003399;padding:.5rem;max-width:100%;box-sizing:border-box" role="status">Vista previa de desarrollo. No confirma publicación ni verificación.</aside>
+  <aside data-esg-dev-preview="editor-only" style="position:static;display:block;background:#fff;color:#172b4d;border:2px solid #003399;padding:.5rem;max-width:100%;box-sizing:border-box" role="status">Vista previa de desarrollo. No confirma publicación ni verificación.</aside>
 {%- endif -%}
 ${anchor}`);
   const schemaMatch = liquid.match(/{% schema %}([\s\S]*?){% endschema %}/);
