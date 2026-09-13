@@ -41,7 +41,7 @@ async function signed(overrides = {}, header = { alg: 'HS256', typ: 'JWT' }) {
 const input = { enabled: true, sellsGoodsToConsumers: true, marketCountry: 'ES', locale: 'es' };
 const snapshot = () => ({ shop: { id: 'gid://shopify/Shop/1', myshopifyDomain: settings.shop, notice: null }, currentAppInstallation: { id: 'gid://shopify/AppInstallation/2', config: null }, shopLocales: [{ locale: 'es', primary: true, published: true }] });
 const manifest = JSON.parse(readFileSync(new URL('../../../extensions/eu-store-guard/assets-manifest.json', import.meta.url)));
-const evidence = { reviewed: true, assetHash: manifest.assets['notice-es-rgb.svg'].sha256, officialHashes: [manifest.assets['notice-es-rgb.svg'].sha256], assetLocale: 'es', isRgb: true, entryPoint: 'catalog', interactionsToFullNotice: 1, yourEuropeLinkPresent: true };
+const evidence = { reviewed: true, assetHash: manifest.assets['notice-es-rgb.svg'].sha256, officialHashes: [manifest.assets['notice-es-rgb.svg'].sha256], assetLocale: 'es', isRgb: true, entryPoint: 'header-section', shop: settings.shop, themeId:'159264309480', reviewScope:'editor-placement', reviewRecord:'DEV-SECTION-COVERAGE.md', interactionsToFullNotice: 1, yourEuropeLinkPresent: true };
 const reply = data => new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
 function fixture({ conflict = false, owner = true } = {}) {
   const writes = [], state = snapshot();
@@ -96,15 +96,15 @@ test('Only complete Spanish configuration with reviewed deployment reaches CONFI
   for (const e of [null, { ...evidence, reviewed: false }, { ...evidence, entryPoint: 'bottom-right' }, { ...evidence, officialHashes: [] }, { ...evidence, interactionsToFullNotice: 2 }, { ...evidence, isRgb: false }]) assert.equal(configurationDecision(input, snapshot(), e).status, 'NEEDS_INFORMATION');
 });
 
-test('top-bar configuration records v2 without turning a declaration into public verification', () => {
-  const result = configurationDecision(input, snapshot(), { ...evidence, entryPoint: 'top-bar', surfacesVerified: ['storefront','checkout','confirmation_email'], verification: {noticePresentation:true} });
+test('header-section configuration records v3 without claiming public verification', () => {
+  const result = configurationDecision(input, snapshot(), { ...evidence, entryPoint: 'header-section', surfacesVerified: ['storefront','checkout','confirmation_email'], verification: {noticePresentation:true} });
   assert.equal(result.status, 'CONFIGURED');
   assert.equal(result.publicVerification, 'pending');
-  assert.equal(result.evaluationLog.rule_version, 2);
-  assert.equal(result.evaluationLog.presentation.entry_point, 'top-bar');
+  assert.equal(result.evaluationLog.rule_version, 3);
+  assert.equal(result.evaluationLog.presentation.entry_point, 'header-section');
   assert.equal(result.evaluationLog.presentation.verification_reported, false);
   assert.match(result.evaluationLog.rule_sha256, /^[a-f0-9]{64}$/);
-  assert.equal(configurationDecision(input, snapshot(), {...evidence,entryPoint:'top-bar',reviewed:false}).status,'NEEDS_INFORMATION');
+  assert.equal(configurationDecision(input, snapshot(), {...evidence,entryPoint:'header-section',reviewed:false}).status,'NEEDS_INFORMATION');
 });
 
 test('B2C, locale, disable and market gates retract publication', () => {
@@ -125,9 +125,9 @@ test('Authenticated save executes one atomic CAS mutation with server-owned iden
   const r = await handleNoticeApp(await request(), { ...env, NOTICE_DEPLOYMENT_EVIDENCE: JSON.stringify(evidence) }, f.fetch);
   assert.equal(r.status, 200); assert.equal((await r.json()).status, 'CONFIGURED');
   assert.equal(f.writes.length, 1);
-  assert.deepEqual(f.writes[0].map(m => m.ownerId), ['gid://shopify/Shop/1', 'gid://shopify/AppInstallation/2']);
+  assert.deepEqual(f.writes[0].map(m => m.ownerId), ['gid://shopify/Shop/1', 'gid://shopify/AppInstallation/2', 'gid://shopify/Shop/1']);
   assert.ok(f.writes[0].every(m => m.compareDigest === null));
-  assert.deepEqual(f.writes[0].map(m => m.key), ['notice_status', 'notice_configuration']);
+  assert.deepEqual(f.writes[0].map(m => m.key), ['notice_status', 'notice_configuration', 'notice_presentation']);
 });
 
 test('Existing live state retracts when deployment evidence is missing', async () => {

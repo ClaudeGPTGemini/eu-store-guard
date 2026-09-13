@@ -9,7 +9,7 @@ const old=JSON.parse(readFileSync(new URL('../rule-history/EU_LEGAL_GUARANTEE_NO
 const base={market:{marketCountry:'ES',storefrontLocale:'es'},activations:{EMPCO_2024_825:{markets:{ES:{status:'VERIFIED_ACTIVE'}}}},evidence:{assetHash:'fixture',officialHashes:['fixture'],assetLocale:'es',isRgb:true,entryPoint:'top-bar',reviewed:true,interactionsToFullNotice:1,yourEuropeLinkPresent:true,surfacesVerified:['storefront','checkout','confirmation_email']}};
 
 test('placement correction is versioned and the original interpretation remains reproducible',()=>{
-  assert.equal(old.version,1); assert.equal(rule.version,2);
+  assert.equal(old.version,1); assert.equal(rule.version,3);
   assert.ok(evaluate(old,base).reasons.includes('entry_point_not_accepted'));
   assert.deepEqual(evaluate(rule,base).reasons,[]);
   assert.equal(evaluate(rule,base).status,'CONFIGURED');
@@ -24,7 +24,7 @@ test('a reviewed declaration and surface list alone cannot produce a LIVE state'
 
 test('evidence log identifies exact rule and separates reported verification from review',()=>{
   const result=evaluate(rule,base);
-  assert.equal(result.log.rule_version,2);
+  assert.equal(result.log.rule_version,3);
   assert.equal(result.log.rule_sha256,createHash('sha256').update(JSON.stringify(rule)).digest('hex'));
   assert.deepEqual(result.log.presentation,{interpretation_revision:'NOTICE-PLACEMENT-2026-09-13',entry_point:'top-bar',review_declared:true,verification_reported:false});
   assert.notEqual(result.log.rule_sha256,evaluate(old,base).log.rule_sha256);
@@ -34,7 +34,7 @@ test('every theme position has an explicit policy; supported values reach the ru
   const liquid=readFileSync(new URL('../../../extensions/eu-store-guard/blocks/guarantee-notice.liquid',import.meta.url),'utf8');
   const schema=JSON.parse(liquid.split('{% schema %}')[1].split('{% endschema %}')[0]);
   const position=schema.settings.find(s=>s.id==='position');
-  assert.deepEqual(position.options.map(o=>o.value).sort(),Object.keys(rule.presentation_policy.positions).sort());
+  assert.deepEqual(position.options.map(o=>o.value).sort(),Object.keys(rule.presentation_policy.positions).filter(p=>p!=='header-section').sort());
   for(const option of position.options) {
     const policy=rule.presentation_policy.positions[option.value];
     assert.ok(['supported_with_review','review_required'].includes(policy.decision));

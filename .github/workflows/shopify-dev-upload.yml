@@ -44,3 +44,4 @@ jobs:
 # DEV flow-layout comparison: inline remains review_required and publicly blocked.
 # Keep the inspection label in normal flow too, so it cannot cover the candidate.
 # DEV section candidate: inspect header-group placement and five page types; editor only.
+# Add real Header section with atomic mechanism migration; retain inspection block and legacy embed.

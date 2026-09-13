@@ -25,6 +25,7 @@
 .esg-notice[data-esg-position="top-bar"] .esg-notice__trigger { max-width: 100%; }
 /* Flow-layout candidate. Public rendering remains blocked by presentation policy.
    Shopify's embed insertion order supplies placement; no host styles or JS relocation. */
+.esg-notice[data-esg-position="header-section"],
 .esg-notice[data-esg-position="inline"] { position: static; display: flex; justify-content: center; flex-wrap: wrap; box-sizing: border-box; width: 100%; margin: 1rem 0; padding: 1rem; background: #fff; border-top: 2px solid #003399; }
 .esg-notice[data-esg-position="inline"] .esg-notice__trigger { max-width: 100%; }
 .esg-notice__trigger { display: inline-flex; align-items: center; box-sizing: border-box; color: #172b4d; background: #fff; border: 2px solid #003399; white-space: normal; min-height: 44px; }

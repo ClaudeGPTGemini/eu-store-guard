@@ -69,6 +69,11 @@ ${anchor}`);
   sectionLiquid = sectionLiquid.replace('{%- assign esg_dev_preview = false -%}',
     '{%- assign can_render = false -%}\n{%- assign esg_dev_preview = false -%}');
   files.set('blocks/guarantee-notice-section-dev.liquid', Buffer.from(sectionLiquid));
+  const headerKey = 'blocks/guarantee-notice-header.liquid';
+  let headerLiquid = files.get(headerKey).toString();
+  if (headerLiquid.split(anchor).length !== 2) throw new Error('Header template changed; review locale gate');
+  headerLiquid = headerLiquid.replace(anchor, `{%- assign packaged_locales = '${locales.join(',')}' | split: ',' -%}\n{%- unless packaged_locales contains current -%}{%- assign supported = false -%}{%- endunless -%}\n${anchor}`);
+  files.set(headerKey, Buffer.from(headerLiquid));
   files.set('shopify.extension.toml', Buffer.from('name = "EU Store Guard DEV"\ntype = "theme"\nhandle = "eu-store-guard"\n'));
   const total = [...files.values()].reduce((n, b) => n + b.length, 0);
   if (total > 10_000_000) throw new Error(`Extension exceeds conservative 10 MB limit: ${total}`);

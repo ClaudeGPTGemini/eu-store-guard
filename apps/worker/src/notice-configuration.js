@@ -12,6 +12,12 @@ export function configurationDecision(input, snapshot, deployment) {
   if (!input.sellsGoodsToConsumers) return { status: 'NOT_APPLICABLE', reasons: ['merchant_declares_no_b2c_goods'] };
   if (input.marketCountry !== 'ES' || input.locale !== 'es') return { status: 'UNKNOWN', reasons: ['outside_spanish_mvp'] };
   if (!snapshot.shopLocales.some(l => l.primary === true && l.published === true && l.locale === 'es')) return { status: 'NEEDS_INFORMATION', reasons: ['spanish_primary_locale_required'] };
+  // Explicit migration: old deployment evidence cannot enable the new mechanism.
+  if (deployment?.entryPoint !== 'header-section' || deployment.shop !== snapshot.shop.myshopifyDomain ||
+      typeof deployment.themeId !== 'string' || !/^[1-9][0-9]*$/.test(deployment.themeId) ||
+      deployment.reviewScope !== 'editor-placement' || deployment.reviewRecord !== 'DEV-SECTION-COVERAGE.md') {
+    return { status: 'NEEDS_INFORMATION', reasons: ['header_section_review_pending'] };
+  }
   // Server-owned presentation review is not merchant self-certification.
   // Positions are supported product policy, not an exhaustive legal whitelist.
   if (!deployment || deployment.reviewed !== true || !/^[a-f0-9]{64}$/.test(deployment.assetHash ?? '') ||
@@ -24,12 +30,13 @@ export function configurationDecision(input, snapshot, deployment) {
     activations: ACTIVATIONS, evidence: deployment });
   // CONFIGURED with failed configuration checks is not permission to publish.
   if (result.status !== 'CONFIGURED' || result.reasons.length) return { status: 'NEEDS_INFORMATION', reasons: ['core_configuration_rejected', ...result.reasons] };
-  return { status: 'CONFIGURED', reasons: [], effectiveFrom: rule.effective_from, publicVerification: 'pending', evaluationLog: result.log };
+  return { status: 'CONFIGURED', reasons: [], effectiveFrom: rule.effective_from, publicVerification: 'pending', evaluationLog: result.log,
+    presentation: {version:1,mechanism:'header-section',themeId:deployment.themeId,publicationReady:true,publicVerification:'pending'} };
 }
 
 export async function saveConfiguration(client, input, deployment, now = new Date()) {
   const snapshot = await client.read();
   const decision = configurationDecision(input, snapshot, deployment);
-  const config = { version: 1, input, decision, updatedAt: now.toISOString() };
+  const config = { version: 2, input, decision, updatedAt: now.toISOString() };
   return client.write(snapshot, decision.status, config);
 }

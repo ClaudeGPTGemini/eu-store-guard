@@ -33,10 +33,11 @@ const NO_PUBLICABLES = ["NEEDS_INFORMATION", "NOT_APPLICABLE", "UNKNOWN", "", nu
 test('notice placement policies govern rendered HTML, including legacy configurations', () => {
   const rule = JSON.parse(readFileSync(new URL('../../../packages/core/rules/EU_LEGAL_GUARANTEE_NOTICE_2026_01.json', import.meta.url)));
   for (const [position, policy] of Object.entries(rule.presentation_policy.positions)) {
-    const html = render(NOTICE, {block:{id:'placement',settings:{position}},shop:{metafields:{eu_store_guard:{notice_status:mf('CONFIGURED')}}},request:{locale:{iso_code:'es'}}});
+    const header = position === 'header-section';
+    const html = render(header ? strip('guarantee-notice-header.liquid') : NOTICE, {theme:{id:123},section:{location:'header'},block:{id:'placement',settings:{position}},shop:{metafields:{eu_store_guard:{notice_status:mf('CONFIGURED'),...(header ? {notice_presentation:{value:{version:1,mechanism:'header-section',themeId:'123',publicationReady:true}}} : {})}}},request:{locale:{iso_code:'es'}}});
     assert.equal(html.includes('esg-notice__trigger'),policy.decision==='supported_with_review',position);
     if (policy.decision==='supported_with_review') {
-      assert.match(html, /data-esg-position="top-bar"/);
+      assert.ok(html.includes(`data-esg-position="${position}"`));
       assert.match(html, /notice-es-rgb.svg/);
     } else assert.equal(html,'');
   }

@@ -1,7 +1,7 @@
 {
   "requirement": "EU_LEGAL_GUARANTEE_NOTICE",
   "rule_id": "EU_LEGAL_GUARANTEE_NOTICE_2026_01",
-  "version": 3,
+  "version": 2,
   "level": "STORE",
   "effective_from": "2026-09-27",
   "sources": [
@@ -18,8 +18,7 @@
     "header",
     "catalog",
     "checkout",
-    "top-bar",
-    "header-section"
+    "top-bar"
   ],
   "surfaces": [
     "storefront",
@@ -97,8 +96,7 @@
               "header",
               "catalog",
               "checkout",
-              "top-bar",
-              "header-section"
+              "top-bar"
             ]
           ]
         },
@@ -151,7 +149,7 @@
     "supersedes_version": 1
   },
   "presentation_policy": {
-    "version": 2,
+    "version": 1,
     "positions": {
       "top-bar": {
         "decision": "supported_with_review",
@@ -168,19 +166,7 @@
       "inline": {
         "decision": "review_required",
         "entry_point": null
-      },
-      "header-section": {
-        "decision": "supported_with_review",
-        "entry_point": "header-section",
-        "mechanism": "section",
-        "required_group": "header"
       }
-    },
-    "revision": {
-      "date": "2026-09-13",
-      "basis": "Product integration: Horizon header-group placement observed on five editor pages. No assertion of public prominence or universal theme compatibility.",
-      "supersedes_version": 1,
-      "evidence": "DEV-SECTION-COVERAGE.md"
     }
   }
 }

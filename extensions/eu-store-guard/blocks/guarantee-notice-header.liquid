@@ -1,7 +1,7 @@
 {%- comment -%}
   EU Store Guard - Aviso armonizado de garantia legal (Reglamento de Ejecucion (UE) 2025/1960).
 
-  App embed block: se activa a nivel de tienda desde el editor de temas, sin tocar el codigo del tema.
+  Section block: header group only; server-owned presentation binding and core state both required.
 
   Reglas que implementa, alineadas con packages/core/rules/EU_LEGAL_GUARANTEE_NOTICE_2026_01.json:
    - Usa EXCLUSIVAMENTE el archivo oficial de la Comision, en RGB, sin modificar colores,
@@ -26,10 +26,13 @@
 {%- assign supported = false -%}
 {%- for l in eu_locales -%}{%- if l == current -%}{%- assign supported = true -%}{%- endif -%}{%- endfor -%}
 
-{%- assign position = block.settings.position | default: 'top-bar' -%}
+{%- assign position = 'header-section' -%}
 {%- comment -%} Product policy v1: legacy positions require review, not a claim of legal prohibition. {%- endcomment -%}
-{%- unless position == 'top-bar' -%}{%- assign can_render = false -%}{%- endunless -%}
-{%- if shop.metafields.eu_store_guard.notice_presentation.value.mechanism == 'header-section' -%}{%- assign can_render = false -%}{%- endif -%}
+{%- assign presentation = shop.metafields.eu_store_guard.notice_presentation.value -%}
+{%- assign current_theme_id = theme.id | append: '' -%}
+{%- unless presentation.version == 1 and presentation.mechanism == 'header-section' and presentation.publicationReady == true and presentation.themeId == current_theme_id and section.location == 'header' -%}
+  {%- assign can_render = false -%}
+{%- endunless -%}
 {%- if can_render and supported -%}
   {%- assign notice_asset = 'notice-' | append: current | append: '-rgb.svg' -%}
   <div class="esg-notice" data-esg-position="{{ position | escape }}" data-esg-locale="{{ current }}" data-esg-rule="EU_LEGAL_GUARANTEE_NOTICE_2026_01" data-esg-status="{{ notice_status | escape }}" data-esg-transcription="{% if current == 'es' %}visually-checked{% else %}pending{% endif %}">
@@ -57,15 +60,5 @@
 {%- endif -%}
 
 {% schema %}
-{
-  "name": "EU legal guarantee notice",
-  "target": "body",
-  "javascript": "eu-store-guard.js",
-  "stylesheet": "eu-store-guard.css",
-  "settings": [
-    { "type": "paragraph", "content": "Muestra el aviso armonizado oficial de garantia legal de la UE. Obligatorio desde el 27 de septiembre de 2026 para ventas B2C de bienes de consumo en la UE. Este bloque no sustituye asesoramiento juridico." },
-    { "type": "select", "id": "position", "label": "Position", "default": "top-bar",
-      "options": [ { "value": "top-bar", "label": "Top bar (requires presentation review)" }, { "value": "bottom-right", "label": "Bottom right (publication blocked pending review)" }, { "value": "bottom-left", "label": "Bottom left (publication blocked pending review)" }, { "value": "inline", "label": "Footer (publication blocked pending review)" } ] }
-  ]
-}
+{"name":"Aviso de garantía (Header)","target":"section","javascript":"eu-store-guard.js","stylesheet":"eu-store-guard.css","settings":[{"type":"paragraph","content":"Añade esta sección al grupo Header. Guarda la configuración en la app. La presencia del bloque no confirma su visibilidad ni el cumplimiento de la tienda."}]}
 {% endschema %}

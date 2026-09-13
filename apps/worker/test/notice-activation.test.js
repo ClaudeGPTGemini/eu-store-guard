@@ -57,9 +57,9 @@ test('served browser code performs a read-only query and retains the public-veri
   assert.equal(calls, 0);
   await ui.click();
   assert.equal(calls, 1); assert.equal(ui.button.disabled, false);
-  assert.match(ui.output.textContent, /activado en el tema publicado/);
-  assert.match(ui.output.textContent, /no confirma que se muestre/);
-  assert.equal(ui.output.dataset.esgActivationDiagnostic, 'classified');
+  assert.match(ui.output.textContent, /embed anterior/);
+  assert.match(ui.output.textContent, /Aún no hemos confirmado que el aviso se muestre/);
+  assert.equal(ui.output.dataset.esgActivationDiagnostic, 'block_absent');
 });
 
 test('rechecking clears stale success before waiting and after a failed query', async () => {
@@ -71,17 +71,17 @@ test('rechecking clears stale success before waiting and after a failed query', 
   assert.equal(ui.button.disabled, true);
   assert.equal(ui.output.textContent, 'Consultando el tema publicado…');
   reject(Error('upstream-private-details')); await pending;
-  assert.match(ui.output.textContent, /No se ha podido confirmar/);
+  assert.match(ui.output.textContent, /(?:No se ha podido confirmar|Aún no hemos confirmado)/);
   assert.doesNotMatch(ui.output.textContent, /upstream/);
 });
 
 test('missing App Bridge and timed-out queries stay unknown and allow retry', async () => {
   const absent = browser(undefined); await absent.click();
-  assert.match(absent.output.textContent, /No se ha podido confirmar/);
+  assert.match(absent.output.textContent, /(?:No se ha podido confirmar|Aún no hemos confirmado)/);
   assert.equal(absent.output.dataset.esgActivationDiagnostic, 'api_unavailable');
   const timed = browser({ app: { extensions: () => new Promise(() => {}) } }, { setTimeout: fn => { queueMicrotask(fn); return 1; }, clearTimeout: () => {} });
   await timed.click(); assert.equal(timed.button.disabled, false);
-  assert.match(timed.output.textContent, /No se ha podido confirmar/);
+  assert.match(timed.output.textContent, /(?:No se ha podido confirmar|Aún no hemos confirmado)/);
   assert.equal(timed.output.dataset.esgActivationDiagnostic, 'timeout');
 });
 
@@ -105,7 +105,7 @@ test('empty and unmatched lists remain unknown with only count and theme presenc
     assert.equal(ui.output.dataset.esgActivationDiagnostic, diagnostic);
     assert.equal(ui.output.dataset.esgExtensionCount, count);
     assert.equal(ui.output.dataset.esgHasThemeExtension, hasTheme);
-    assert.match(ui.output.textContent, /No se ha podido confirmar/);
+    assert.match(ui.output.textContent, /(?:No se ha podido confirmar|Aún no hemos confirmado)/);
     assert.doesNotMatch(JSON.stringify(ui.output), /private-handle/);
     bridge.app.extensions = async()=>{throw Error('private-error');};
     await ui.click();
