@@ -1,20 +1,26 @@
 name: Deploy Worker DEV
 
-# Disparo exclusivamente manual: el primer despliegue debe ser deliberado y sin
-# EVALUATE_TOKEN, para certificar el fallo cerrado (503) en el Worker real.
+# Solo ejecución manual en DEV. No escribe ni rota secretos.
 on:
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: worker-eu-store-guard-dev
+  cancel-in-progress: false
+
 jobs:
   deploy:
     name: deploy-dev
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
@@ -25,8 +31,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate before deploying
+        run: |
+          npm test
+          npm run lint
+          npm run bundle:check
+
       - name: Deploy to Cloudflare Workers (DEV)
         run: npx wrangler deploy --config apps/worker/wrangler.toml
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Check DEV health and unauthenticated boundaries
+        run: node scripts/check-worker-dev.mjs
