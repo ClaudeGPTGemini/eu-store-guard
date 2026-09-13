@@ -37,6 +37,6 @@ Using the app form, enabled was switched off and saved. Reloading the real store
 
 The App Bridge observation still reports `handle_or_type_mismatch`. It remains informational and does not write a LIVE state. Direct storefront evidence above does not silently change its result. The implementation has not been independently audited yet.
 
-Dawn is not tested. Physical phone, real screen reader, wider page/alternate-template coverage, customer onboarding and final prominence assessment remain open. CONFIGURED is not LIVE_VERIFIED, legal compliance certification or readiness to sell. The four valid-token Worker DEV checks are still not completed by the deployment's negative-auth tests.
+Dawn has separate initial editor-only evidence in `DEV-DAWN-EDITOR-COVERAGE.md`; its real configuration flow is not tested. Physical phone, real screen reader, wider page/alternate-template coverage, customer onboarding and final prominence assessment remain open. CONFIGURED is not LIVE_VERIFIED, legal compliance certification or readiness to sell. The four valid-token Worker DEV checks are still not completed by the deployment's negative-auth tests.
 
 CI on the code commit is green. Tests: core 29 + Worker 63 + extension 57 + packaging 6 = 155. Assets: 26 original files verified. Local Wrangler dry-run encountered the Windows sandbox path restriction; Linux CI build passed. PR #3 remains unmerged. No production deployment or expenditure; EUR 0.
