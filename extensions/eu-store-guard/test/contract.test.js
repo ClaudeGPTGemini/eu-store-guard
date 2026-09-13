@@ -20,7 +20,8 @@ test("el bloque GARAN solo declara como pintables estados que existen en el core
 
 test("ningun bloque usa estados inventados fuera del contrato", () => {
   // NEEDS_PRODUCER_LABEL no es un estado: es un reason que el core adjunta a NEEDS_INFORMATION.
-  const permitidos = new Set([...CORE, "LANGUAGE_REVIEW_REQUIRED", "NEEDS_PRODUCER_LABEL"]);
+  // READY belongs only to the independent import envelope, never the core renderable list.
+  const permitidos = new Set([...CORE, "LANGUAGE_REVIEW_REQUIRED", "NEEDS_PRODUCER_LABEL", "READY"]);
   // Se analiza solo el codigo: los comentarios Liquid documentan y no ejecutan.
   const sinComentarios = (t) => t.replace(/{%-?\s*comment\s*-?%}[\s\S]*?{%-?\s*endcomment\s*-?%}/g, "");
   for (const src of [sinComentarios(garan), sinComentarios(notice)]) {

@@ -81,17 +81,20 @@ test("GARAN: sin duracion no publica aunque el estado lo permita", () => {
   }
 });
 
-test("GARAN: usa el asset del productor cuando existe; si no, el oficial", () => {
+test("GARAN: bloquea URL legacy; ausencia sin restos conserva el oficial", () => {
   const conProductor = garan({ garan_status: "CONFIGURED", garan_duration_years: 3, garan_producer_asset: "https://cdn.example/p.svg" });
-  assert.match(conProductor, /https:\/\/cdn\.example\/p\.svg/);
+  assert.equal(conProductor, "");
   const sinProductor = garan({ garan_status: "CONFIGURED", garan_duration_years: 3 });
   assert.match(sinProductor, /garan-rgb\.svg/);
 });
 
 test("ambos bloques vinculan CSS y JS", () => {
-  for (const html of [notice("CONFIGURED"), garan({ garan_status: "CONFIGURED", garan_duration_years: 3 })]) {
-    assert.match(html, /<link rel="stylesheet" href="\/assets\/eu-store-guard\.css">/);
-    assert.match(html, /<script src="\/assets\/eu-store-guard\.js"/);
+  for (const file of ["guarantee-notice.liquid", "garan-label.liquid"]) {
+    const src = readFileSync(new URL(file, B), "utf8");
+    const schema = JSON.parse(src.match(/{% schema %}([\s\S]*?){% endschema %}/)[1]);
+    assert.equal(schema.javascript, "eu-store-guard.js");
+    assert.equal(schema.stylesheet, "eu-store-guard.css");
+    assert.doesNotMatch(src, /script_tag|stylesheet_tag/);
   }
 });
 
@@ -139,9 +142,9 @@ test("seguridad: marca y modelo se escapan y no inyectan HTML", () => {
   assert.match(html, /&lt;img src=x/, "debe aparecer escapado");
 });
 
-test("seguridad: el asset del productor se escapa al imprimirse", () => {
+test("seguridad: una URL legacy maliciosa bloquea todo el HTML", () => {
   const html = garan({ garan_status: "CONFIGURED", garan_duration_years: 3, garan_producer_asset: 'x" onerror="alert(1)' });
-  assert.ok(!/onerror="alert/.test(html));
+  assert.equal(html, "");
 });
 
 test("Escape cierra tambien el aviso, no solo GARAN", () => {

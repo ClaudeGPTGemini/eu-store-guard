@@ -8,6 +8,10 @@
     "build": "node ../../scripts/build-check.mjs && wrangler deploy --dry-run"
   },
   "dependencies": {
-    "@eu-store-guard/core": "*"
+    "@eu-store-guard/core": "*",
+    "saxes": "6.0.0"
+  },
+  "devDependencies": {
+    "liquidjs": "10.29.0"
   }
 }

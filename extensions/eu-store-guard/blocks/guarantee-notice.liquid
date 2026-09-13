@@ -28,15 +28,19 @@
 
 {%- if can_render and supported -%}
   {%- assign notice_asset = 'notice-' | append: current | append: '-rgb.svg' -%}
-  {{ 'eu-store-guard.css' | asset_url | stylesheet_tag }}
-  {{ 'eu-store-guard.js' | asset_url | script_tag }}
   <div class="esg-notice" data-esg-locale="{{ current }}" data-esg-rule="EU_LEGAL_GUARANTEE_NOTICE_2026_01" data-esg-status="{{ notice_status | escape }}">
     <button type="button" class="esg-notice__trigger" aria-expanded="false" aria-controls="esg-notice-panel-{{ block.id }}">
       {{ 'guarantee.open' | t }}
     </button>
     <div id="esg-notice-panel-{{ block.id }}" class="esg-notice__panel" hidden>
+      {%- comment -%}
+        Dimensiones intrinsecas del archivo oficial (viewBox 0 0 595.28 841.89, A4): par entero equivalente, proporcion exacta.
+        Se declaran para que el navegador reserve el espacio y no salte el layout; el CSS lo
+        escala manteniendo la proporcion. Prohibido alterar el ratio del asset oficial.
+      {%- endcomment -%}
       <img class="esg-notice__asset"
            src="{{ notice_asset | asset_url }}"
+           width="59528" height="84189"
            alt="{{ 'guarantee.title' | t }}"
            loading="lazy"
            decoding="async">
@@ -56,6 +60,8 @@
 {
   "name": "EU legal guarantee notice",
   "target": "body",
+  "javascript": "eu-store-guard.js",
+  "stylesheet": "eu-store-guard.css",
   "settings": [
     { "type": "paragraph", "content": "Muestra el aviso armonizado oficial de garantia legal de la UE. Obligatorio desde el 27 de septiembre de 2026 para ventas B2C de bienes de consumo en la UE. Este bloque no sustituye asesoramiento juridico." },
     { "type": "select", "id": "position", "label": "Position", "default": "bottom-right",

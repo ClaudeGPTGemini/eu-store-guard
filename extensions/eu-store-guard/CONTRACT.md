@@ -1,69 +1,73 @@
-# Contrato Worker -> Shopify -> Liquid
+# Contrato de publicación — candidata v15, pendiente de revisión
 
-Define quien escribe cada dato y que puede pintar el tema. El tema **nunca** decide aplicabilidad
-regulatoria: solo refleja lo que el core ya evaluo.
+El core no cambia: solo CONFIGURED, LIVE_PARTIAL y LIVE_VERIFIED permiten publicar.
+Los avisos no hacen fallback de idioma. Esta entrega no implementa el cron de
+verificación pública ni certifica estados LIVE.
 
-## 1. Worker -> Shopify (metafields)
+## Nuevo dato de producto
+eu_store_guard.garan_assets_v1 es un metafield JSON nuevo. No cambia el tipo de las
+claves previas. SCHEMA, en apps/worker/src/producer-import.js, define su estructura.
+El cliente instala la validación Shopify llamada schema y rechaza una definición
+existente diferente.
 
-La app evalua el core y escribe metafields en el namespace `eu_store_guard`. Estados permitidos,
-identicos a `packages/core/src/status.js`:
+El objeto agrupa las dos variantes del productor:
+- state: BLOCKED o READY (estado de importación, independiente del core).
+- operation: identificador de operación.
+- full y nested: obligatorios cuando READY; cada uno contiene url, width, height,
+  sha256 y fileId. La URL procede del CDN Shopify y el ID de GenericFile.
+- width y height: enteros 1..100000 que representan la proporción exacta del SVG,
+  no tamaño físico ni tamaño de pantalla.
+- sha256: 64 caracteres hexadecimales del archivo servido.
 
-    NOT_APPLICABLE | NEEDS_INFORMATION | CONFIGURED | LIVE_PARTIAL | LIVE_VERIFIED | UNKNOWN
+Ambas variantes son obligatorias en este perfil inicial. No se completa una pareja
+del productor con recursos oficiales.
 
-Mas el valor derivado `LANGUAGE_REVIEW_REQUIRED`, que solo produce la resolucion de locale.
+## Liquid y migración
+Se comprueba presencia del metafield antes de .value. Un objeto vacío, mal tipado,
+BLOCKED, incompleto o con dimensiones inválidas bloquea el HTML completo. Liquid
+exige tipo json, READY, operación y las dos variantes con URL del CDN, dimensiones,
+fileId y huella. Escapa atributos; no descarga ni verifica hashes.
 
-### Nivel tienda (`shop.metafields.eu_store_guard`)
-| Clave | Tipo | Origen |
-|---|---|---|
-| `notice_status` | estado | evaluacion de EU_LEGAL_GUARANTEE_NOTICE_2026_01 |
+Estas seis claves antiguas bloquean por su presencia, incluso vacías:
+garan_producer_asset, garan_producer_nested_asset, garan_producer_asset_width,
+garan_producer_asset_height, garan_producer_nested_width, garan_producer_nested_height.
 
-### Nivel producto (`product.metafields.eu_store_guard`)
-| Clave | Tipo | Origen |
-|---|---|---|
-| `garan_status` | estado | evaluacion de EU_GARAN_2026_01 |
-| `garan_duration_years` | number | validado: > 2, entero o medio anio |
-| `garan_brand` | string | marca registrada, facilitada por el productor |
-| `garan_model` | string | identificador de modelo, facilitado por el productor |
-| `garan_producer_asset` | url | asset del productor (caso revendedor) |
-| `garan_producer_nested_asset` | url | asset anidado facilitado por el productor, con prioridad sobre el oficial |
+Si no hay nuevo objeto ni restos antiguos, se conserva la ruta oficial sujeta al
+core. El escritor de garan_status debe evaluar el rol del comerciante: ausencia
+de etiqueta de un revendedor no autoriza CONFIGURED. Este importador no modifica
+ni certifica ese estado regulatorio.
 
-## 2. Shopify -> Liquid (que se pinta)
+PRERREQUISITO: instalar y verificar esta plantilla en DEV antes de importar.
+La candidata anterior ignora el bloqueo nuevo.
 
-Regla unica, aplicada en los dos bloques:
+## Operación
+1. Adquirir BLOCKED con compareDigest antes de analizar los bytes.
+2. Analizar ambos SVG, subirlos y comparar por SHA-256 con lo servido.
+3. Borrar las seis claves antiguas mientras el bloqueo sigue persistido.
+4. Escribir la pareja READY usando el digest del bloqueo adquirido.
 
-| Estado | Se pinta? | Motivo |
-|---|---|---|
-| `LIVE_VERIFIED` | SI | datos completos y verificados en la superficie publica |
-| `LIVE_PARTIAL` | SI | datos completos; falta verificar alguna superficie |
-| `CONFIGURED` | SI | datos completos; aun sin verificacion publica |
-| `NEEDS_INFORMATION` | NO | faltan datos del productor: publicar seria inventar |
-| `NOT_APPLICABLE` | NO | la obligacion no aplica a este producto o mercado |
-| `UNKNOWN` | NO | el core no pudo determinarlo: no se decide por intuicion |
-| `LANGUAGE_REVIEW_REQUIRED` | NO | locale fuera de las 24 oficiales; prohibido fallback a ingles |
+Borrado y escritura son mutaciones distintas, no una transacción conjunta.
+Un fallo no borra el control de publicación. No hay reintento ni desbloqueo
+automático. Debe reconciliarse el estado persistido tras una interrupción: Shopify
+puede haber escrito READY aunque se pierda su respuesta. No se borran archivos
+posiblemente referenciados; se devuelven los IDs conocidos para revisión.
 
-Ningun otro valor pinta. Un estado desconocido o vacio se trata como no pintable.
+## Perfil SVG
+Entrada: bytes UTF-8, nunca URL o dimensiones aportadas. saxes analiza el XML
+completo. Se rechazan DTD, instrucciones de procesamiento, namespaces ajenos,
+referencias externas, estilos y elementos fuera del perfil estático permitido.
+Límite de 2 MB y 128 niveles. No es un sanitizador universal ni acepta cualquier SVG.
+Decimales de hasta seis posiciones; sin viewBox solo px o sin unidad. Se conserva
+la proporción mediante BigInt, sin redondear ni modificar los bytes originales.
+Un archivo fuera del perfil se rechaza.
 
-## 3. Invariantes
+Se usan stagedUploadsCreate y fileCreate como GenericFile, se espera READY y se
+obtiene la URL de Shopify. Se vuelve a descargar y comparar su hash antes de
+publicar. Esa igualdad se acredita en ese momento; no garantiza inmutabilidad
+futura frente a cambios administrativos en Files.
 
-1. El tema no compone assets: solo referencia los oficiales por nombre.
-2. El tema no traduce: usa el asset del locale o no pinta.
-3. Ningun estado nuevo puede introducirse sin existir antes en el core.
-4. `NEEDS_INFORMATION` nunca pinta, aunque haya duracion: seria publicar un dato incompleto.
-
-## 4. Retraccion de contenido
-
-El tema **no cachea** estado. Cada render lee el metafield vigente, de modo que una degradacion a
-`NEEDS_INFORMATION`, `NOT_APPLICABLE` o `UNKNOWN` deja de pintar en el siguiente render, sin
-intervencion ni purga manual. No existe ruta por la que el bloque muestre un estado anterior.
-
-Consecuencia buscada: **el contenido obsoleto no sobrevive al cambio de estado**. Es preferible no
-mostrar nada a mostrar informacion regulatoria que el core ya no respalda.
-
-## 5. Por que CONFIGURED publica
-
-`LIVE_VERIFIED` significa que Guard **ha visto** el aviso en la superficie publica. Exigirlo para
-publicar seria circular: nunca podria verificarse algo que no se ha publicado todavia.
-
-La secuencia real es: datos completos (`CONFIGURED`) -> se publica -> el cron verifica la superficie
-publica -> `LIVE_PARTIAL` o `LIVE_VERIFIED`. Por eso `CONFIGURED` es el umbral de publicacion y los
-estados LIVE son consecuencia, no requisito.
+## Evidencia y límites
+Pruebas locales con XML y Liquid reales, transporte Shopify simulado, concurrencia,
+fallos y proporciones de los 26 SVG versionados. Originales intactos.
+Faltan revisión independiente, instalación real, permisos Admin, aceptación del
+esquema y SVG en Files, móvil, lector de pantalla y pruebas autenticadas del Worker.
