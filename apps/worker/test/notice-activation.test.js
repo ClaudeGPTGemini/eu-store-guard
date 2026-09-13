@@ -1,8 +1,23 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runInNewContext } from 'node:vm';
-import { noticeActivation, activationScript } from '../src/notice-activation.js';
+import { activationScript } from '../src/notice-activation.js';
+import { readFileSync } from 'node:fs';
+import { transform } from 'esbuild';
 
+test('Worker bundler keepNames transformation cannot inject helpers into browser source', async () => {
+  const source = readFileSync(new URL('../src/notice-activation.js', import.meta.url), 'utf8');
+  const built = await transform(source, { format: 'cjs', keepNames: true, minify: false });
+  const module = { exports: {} };
+  runInNewContext(built.code, { module, exports: module.exports });
+  assert.equal(module.exports.activationScript, activationScript);
+  assert.doesNotMatch(module.exports.activationScript, /__name/);
+  const listeners = {};
+  runInNewContext(module.exports.activationScript, { document: { querySelector: () => ({ addEventListener: (event, fn) => { listeners[event] = fn; } }) } });
+  assert.equal(typeof listeners.click, 'function');
+});
+
+const { noticeActivation } = runInNewContext(activationScript + ';({noticeActivation})', { document: { querySelector: () => null } });
 const fixture = () => [{ handle: 'eu-store-guard', type: 'theme_app_extension', activations: [{ handle: 'guarantee-notice', target: 'body', status: 'active', activations: [{ target: 'theme', themeId: 'gid://shopify/OnlineStoreTheme/123' }] }] }];
 
 test('activation identifies only our notice on a published-theme placement', () => {

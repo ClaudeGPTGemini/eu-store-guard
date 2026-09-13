@@ -1,5 +1,6 @@
-// Read-only App Bridge observation, never evidence for a core LIVE state.
-export function noticeActivation(extensions) {
+// Browser source is literal: never serialize functions transformed by the Worker bundler.
+export const activationScript = String.raw`// Read-only App Bridge observation, never evidence for a core LIVE state.
+function noticeActivation(extensions) {
   if (!Array.isArray(extensions)) return 'unknown';
   const matching = extensions.filter(e => e?.type === 'theme_app_extension' && e.handle === 'eu-store-guard');
   if (matching.length !== 1 || !Array.isArray(matching[0].activations)) return 'unknown';
@@ -15,7 +16,7 @@ export function noticeActivation(extensions) {
     ? 'active' : 'unknown';
 }
 
-export function installActivationCheck(doc, bridge, classify) {
+function installActivationCheck(doc, bridge, classify) {
   const button = doc.querySelector('#check-activation');
   const output = doc.querySelector('#activation-result');
   if (!button || !output) return;
@@ -47,4 +48,4 @@ export function installActivationCheck(doc, bridge, classify) {
   return check;
 }
 
-export const activationScript = `${noticeActivation.toString()};(${installActivationCheck.toString()})(document,globalThis.shopify,noticeActivation);`;
+installActivationCheck(document,globalThis.shopify,noticeActivation);`;
