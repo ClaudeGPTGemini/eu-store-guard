@@ -29,3 +29,19 @@ test('rejects unsupported locale, oversized package, and existing destination be
   const bad=join(parent,'invalid');assert.throws(() => packageDev({output:bad,locales:['xx']}), /absent/);assert.equal(existsSync(bad),false);
   const all=join(parent,'all');assert.throws(() => packageDev({output:all,locales:'bg,hr,cs,da,nl,de,el,en,et,fi,fr,hu,ga,it,lt,lv,mt,pl,pt,ro,sk,sl,es,sv'.split(',')}),/10 MB/);assert.equal(existsSync(all),false);
 });
+
+test('DEV preview requires editor, exact development shop and explicit boolean opt-in', async () => {
+  const base = {request:{design_mode:true,locale:{iso_code:'es'}},block:{id:'preview',settings:{position:'top-bar',esg_dev_preview:true}},shop:{permanent_domain:'eu-store-guard-dev.myshopify.com',metafields:{eu_store_guard:{notice_status:{value:'NEEDS_INFORMATION'}}}}};
+  const html = await liquid.parseAndRender(block,base);
+  assert.match(html,/data-esg-dev-preview="editor-only"/);
+  assert.match(html,/No confirma publicación ni verificación/);
+  assert.match(html,/data-esg-status="NEEDS_INFORMATION"/);
+  assert.match(html,/notice-es-rgb.svg/);
+  assert.doesNotMatch(html,/data-esg-status="(?:CONFIGURED|LIVE_)/);
+  for (const mutate of [c=>{c.request.design_mode=false;},c=>{delete c.request.design_mode;},c=>{c.request.design_mode='true';},c=>{c.shop.permanent_domain='other.myshopify.com';},c=>{c.block.settings.esg_dev_preview=false;},c=>{c.block.settings.esg_dev_preview='true';},c=>{c.block.settings.position='bottom-right';},c=>{c.request.locale.iso_code='en';}]) {
+    const c=structuredClone(base); mutate(c);
+    assert.equal((await liquid.parseAndRender(block,c)).trim(),'');
+  }
+  const source=readFileSync(new URL('../extensions/eu-store-guard/blocks/guarantee-notice.liquid',import.meta.url),'utf8');
+  assert.doesNotMatch(source,/esg_dev_preview/);
+});

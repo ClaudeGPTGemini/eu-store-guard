@@ -39,6 +39,23 @@ export function packageDev({ locales = ['es'], output, source = join(root, 'exte
   const anchor = '{%- if can_render and supported -%}';
   if (liquid.split(anchor).length !== 2) throw new Error('Notice template changed; review packaging transform');
   liquid = liquid.replace(anchor, `{%- assign packaged_locales = '${locales.join(',')}' | split: ',' -%}\n{%- unless packaged_locales contains current -%}{%- assign supported = false -%}{%- endunless -%}\n${anchor}`);
+  // DEV-only, explicit editor preview. Never writes or fabricates a core state.
+  // All three gates are server-rendered; query parameters cannot enable it.
+  liquid = liquid.replace(anchor, `{%- assign esg_dev_preview = false -%}
+{%- if request.design_mode == true and shop.permanent_domain == 'eu-store-guard-dev.myshopify.com' and block.settings.esg_dev_preview == true and position == 'top-bar' and supported -%}
+  {%- assign esg_dev_preview = true -%}
+  {%- assign can_render = true -%}
+{%- endif -%}
+{%- if esg_dev_preview -%}
+  <aside data-esg-dev-preview="editor-only" style="position:fixed;bottom:0;left:0;z-index:1001;background:#fff;color:#172b4d;border:2px solid #003399;padding:.5rem;max-width:100%;box-sizing:border-box" role="status">Vista previa de desarrollo. No confirma publicación ni verificación.</aside>
+{%- endif -%}
+${anchor}`);
+  const schemaMatch = liquid.match(/{% schema %}([\s\S]*?){% endschema %}/);
+  if (!schemaMatch) throw new Error('Notice schema missing');
+  const schema = JSON.parse(schemaMatch[1]);
+  schema.settings.push({type:'checkbox',id:'esg_dev_preview',label:'Vista previa DEV (solo editor)',default:false,
+    info:'Muestra una prueba visual aunque la configuración esté pendiente. No publica ni verifica el aviso.'});
+  liquid = liquid.replace(schemaMatch[0], `{% schema %}\n${JSON.stringify(schema,null,2)}\n{% endschema %}`);
   files.set(key, Buffer.from(liquid));
   files.set('shopify.extension.toml', Buffer.from('name = "EU Store Guard DEV"\ntype = "theme"\nhandle = "eu-store-guard"\n'));
   const total = [...files.values()].reduce((n, b) => n + b.length, 0);
