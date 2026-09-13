@@ -11,7 +11,7 @@ const sha=b=>createHash('sha256').update(b).digest('hex');
 const engine=new Liquid({root:fileURLToPath(new URL('snippets/',root)),extname:'.liquid'});
 engine.registerFilter('asset_url',v=>'/assets/'+v);
 engine.registerFilter('t',v=>v);
-const render=(locale='es',status='CONFIGURED')=>engine.parseAndRenderSync(read('blocks/guarantee-notice.liquid').split('{% schema %}')[0],{block:{id:'notice-17',settings:{position:'bottom-left'}},request:{locale:{iso_code:locale}},shop:{metafields:{eu_store_guard:{notice_status:{value:status}}}}});
+const render=(locale='es',status='CONFIGURED')=>engine.parseAndRenderSync(read('blocks/guarantee-notice.liquid').split('{% schema %}')[0],{block:{id:'notice-17',settings:{position:'top-bar'}},request:{locale:{iso_code:locale}},shop:{metafields:{eu_store_guard:{notice_status:{value:status}}}}});
 test('Spanish transcript tied to reviewed official bytes and its own bytes',()=>{
   const m=JSON.parse(read('transcriptions/es.json'));
   assert.equal(sha(readFileSync(new URL('assets/'+m.asset,root))),m.assetSha256);
@@ -26,7 +26,7 @@ test('Spanish renders native closed dialog and structured transcript without cha
   assert.doesNotMatch(html,/<dialog[^>]*\sopen(?:\s|>|=)/);
   assert.match(html,/tabindex="-1" autofocus/);
   assert.match(html,/<form method="dialog">/);
-  assert.match(html,/data-esg-position="bottom-left"/);
+  assert.match(html,/data-esg-position="top-bar"/);
   assert.match(html,/data-esg-transcription="visually-checked"/);
   assert.match(html,/<section[^>]*lang="es"/);
   assert.match(html,/<ol><li>Póngase/);
@@ -78,3 +78,6 @@ test('Only successful ordinary modal clicks suppress navigation',()=>{
   for(const extra of [{ctrlKey:true},{metaKey:true},{shiftKey:true},{altKey:true},{button:1},{defaultPrevented:true}]) assert.equal(clickNotice(dialog,extra),false);
   assert.equal(opened,1);
 });
+
+
+

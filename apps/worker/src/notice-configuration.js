@@ -12,11 +12,11 @@ export function configurationDecision(input, snapshot, deployment) {
   if (!input.sellsGoodsToConsumers) return { status: 'NOT_APPLICABLE', reasons: ['merchant_declares_no_b2c_goods'] };
   if (input.marketCountry !== 'ES' || input.locale !== 'es') return { status: 'UNKNOWN', reasons: ['outside_spanish_mvp'] };
   if (!snapshot.shopLocales.some(l => l.primary === true && l.published === true && l.locale === 'es')) return { status: 'NEEDS_INFORMATION', reasons: ['spanish_primary_locale_required'] };
-  // Deployment evidence is server-owned and must be audited independently. Do not
-  // translate the existing floating bottom-right widget into "header" by assumption.
+  // Server-owned presentation review is not merchant self-certification.
+  // Positions are supported product policy, not an exhaustive legal whitelist.
   if (!deployment || deployment.reviewed !== true || !/^[a-f0-9]{64}$/.test(deployment.assetHash ?? '') ||
       !Array.isArray(deployment.officialHashes) || !deployment.officialHashes.includes(deployment.assetHash) ||
-      !['header','catalog','checkout'].includes(deployment.entryPoint) || deployment.assetLocale !== 'es' ||
+      !rule.accepted_entry_points.includes(deployment.entryPoint) || deployment.assetLocale !== 'es' ||
       deployment.isRgb !== true || deployment.interactionsToFullNotice !== 1 || deployment.yourEuropeLinkPresent !== true) {
     return { status: 'NEEDS_INFORMATION', reasons: ['deployment_evidence_pending'] };
   }
@@ -24,7 +24,7 @@ export function configurationDecision(input, snapshot, deployment) {
     activations: ACTIVATIONS, evidence: deployment });
   // CONFIGURED with failed configuration checks is not permission to publish.
   if (result.status !== 'CONFIGURED' || result.reasons.length) return { status: 'NEEDS_INFORMATION', reasons: ['core_configuration_rejected', ...result.reasons] };
-  return { status: 'CONFIGURED', reasons: [], effectiveFrom: rule.effective_from, publicVerification: 'pending' };
+  return { status: 'CONFIGURED', reasons: [], effectiveFrom: rule.effective_from, publicVerification: 'pending', evaluationLog: result.log };
 }
 
 export async function saveConfiguration(client, input, deployment, now = new Date()) {
@@ -33,3 +33,4 @@ export async function saveConfiguration(client, input, deployment, now = new Dat
   const config = { version: 1, input, decision, updatedAt: now.toISOString() };
   return client.write(snapshot, decision.status, config);
 }
+

@@ -96,6 +96,17 @@ test('Only complete Spanish configuration with reviewed deployment reaches CONFI
   for (const e of [null, { ...evidence, reviewed: false }, { ...evidence, entryPoint: 'bottom-right' }, { ...evidence, officialHashes: [] }, { ...evidence, interactionsToFullNotice: 2 }, { ...evidence, isRgb: false }]) assert.equal(configurationDecision(input, snapshot(), e).status, 'NEEDS_INFORMATION');
 });
 
+test('top-bar configuration records v2 without turning a declaration into public verification', () => {
+  const result = configurationDecision(input, snapshot(), { ...evidence, entryPoint: 'top-bar', surfacesVerified: ['storefront','checkout','confirmation_email'], verification: {noticePresentation:true} });
+  assert.equal(result.status, 'CONFIGURED');
+  assert.equal(result.publicVerification, 'pending');
+  assert.equal(result.evaluationLog.rule_version, 2);
+  assert.equal(result.evaluationLog.presentation.entry_point, 'top-bar');
+  assert.equal(result.evaluationLog.presentation.verification_reported, false);
+  assert.match(result.evaluationLog.rule_sha256, /^[a-f0-9]{64}$/);
+  assert.equal(configurationDecision(input, snapshot(), {...evidence,entryPoint:'top-bar',reviewed:false}).status,'NEEDS_INFORMATION');
+});
+
 test('B2C, locale, disable and market gates retract publication', () => {
   assert.equal(configurationDecision({ ...input, enabled: false }, snapshot(), evidence).status, 'NEEDS_INFORMATION');
   assert.equal(configurationDecision({ ...input, sellsGoodsToConsumers: false }, snapshot(), evidence).status, 'NOT_APPLICABLE');
@@ -153,3 +164,4 @@ test('App shell uses App Bridge and never contains a client secret', async () =>
   assert.equal(r.status, 200); assert.match(r.headers.get('Content-Security-Policy'), /frame-ancestors https:\/\/admin.shopify.com/);
   const html = await r.text(); assert.match(html, /shopify-api-key/); assert.doesNotMatch(html, new RegExp(env.SHOPIFY_CLIENT_SECRET));
 });
+

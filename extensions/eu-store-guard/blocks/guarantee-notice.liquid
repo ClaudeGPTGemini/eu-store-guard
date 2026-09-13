@@ -26,9 +26,11 @@
 {%- assign supported = false -%}
 {%- for l in eu_locales -%}{%- if l == current -%}{%- assign supported = true -%}{%- endif -%}{%- endfor -%}
 
+{%- assign position = block.settings.position | default: 'top-bar' -%}
+{%- comment -%} Product policy v1: legacy positions require review, not a claim of legal prohibition. {%- endcomment -%}
+{%- unless position == 'top-bar' -%}{%- assign can_render = false -%}{%- endunless -%}
 {%- if can_render and supported -%}
   {%- assign notice_asset = 'notice-' | append: current | append: '-rgb.svg' -%}
-  {%- assign position = block.settings.position | default: 'bottom-right' -%}
   <div class="esg-notice" data-esg-position="{{ position | escape }}" data-esg-locale="{{ current }}" data-esg-rule="EU_LEGAL_GUARANTEE_NOTICE_2026_01" data-esg-status="{{ notice_status | escape }}" data-esg-transcription="{% if current == 'es' %}visually-checked{% else %}pending{% endif %}">
     <a href="{{ notice_asset | asset_url }}" class="esg-notice__trigger" aria-haspopup="dialog" aria-expanded="false" aria-controls="esg-notice-panel-{{ block.id }}">
       {{ 'guarantee.open' | t }}
@@ -61,8 +63,9 @@
   "stylesheet": "eu-store-guard.css",
   "settings": [
     { "type": "paragraph", "content": "Muestra el aviso armonizado oficial de garantia legal de la UE. Obligatorio desde el 27 de septiembre de 2026 para ventas B2C de bienes de consumo en la UE. Este bloque no sustituye asesoramiento juridico." },
-    { "type": "select", "id": "position", "label": "Position", "default": "bottom-right",
-      "options": [ { "value": "bottom-right", "label": "Bottom right" }, { "value": "bottom-left", "label": "Bottom left" }, { "value": "inline", "label": "Inline (footer)" } ] }
+    { "type": "select", "id": "position", "label": "Position", "default": "top-bar",
+      "options": [ { "value": "top-bar", "label": "Top bar (requires presentation review)" }, { "value": "bottom-right", "label": "Bottom right (publication blocked pending review)" }, { "value": "bottom-left", "label": "Bottom left (publication blocked pending review)" }, { "value": "inline", "label": "Footer (publication blocked pending review)" } ] }
   ]
 }
 {% endschema %}
+

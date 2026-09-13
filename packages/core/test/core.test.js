@@ -23,8 +23,8 @@ test("aviso: locale -> asset oficial, sin fallback a inglés", () => {
 test("aviso: CONFIGURED con motivos, LIVE_PARTIAL, LIVE_VERIFIED", () => {
   const evidence = { assetHash: "abc", officialHashes: new Set(["abc"]), assetLocale: "de", isRgb: true, entryPoint: "header", interactionsToFullNotice: 1, yourEuropeLinkPresent: true, surfacesVerified: ["storefront"] };
   const market = { marketCountry: "DE", storefrontLocale: "de" };
-  assert.equal(S(evaluate(notice, { market, evidence, verification: {}, activations: ACT })), STATUS.LIVE_PARTIAL);
-  assert.equal(S(evaluate(notice, { market, evidence: { ...evidence, surfacesVerified: notice.surfaces }, verification: {}, activations: ACT })), STATUS.LIVE_VERIFIED);
+  assert.equal(S(evaluate(notice, { market, evidence, verification: { noticePresentation: true }, activations: ACT })), STATUS.LIVE_PARTIAL);
+  assert.equal(S(evaluate(notice, { market, evidence: { ...evidence, surfacesVerified: notice.surfaces }, verification: { noticePresentation: true }, activations: ACT })), STATUS.LIVE_VERIFIED);
   const bad = evaluate(notice, { market, evidence: { ...evidence, assetHash: "zzz", yourEuropeLinkPresent: false } });
   assert.equal(S(bad), STATUS.CONFIGURED);
   assert.deepEqual(bad.reasons.sort(), ["asset_not_official", "your_europe_link_missing"]);
@@ -117,3 +117,4 @@ test("palabras prohibidas no aparecen como estados en el núcleo ni en las regla
   const ruleStatuses = rules.flatMap((r) => JSON.stringify(r.evaluation).match(/"(on_false|on_unknown|on_fail|max)":"([A-Z_]+)"/g) ?? []);
   for (const w of FORBIDDEN_WORDS) { assert.equal(src.includes(`"${w}"`), false, w); assert.equal(ruleStatuses.some((s) => s.endsWith(`"${w}"`)), false, w); }
 });
+

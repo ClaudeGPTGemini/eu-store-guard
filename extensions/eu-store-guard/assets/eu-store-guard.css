@@ -19,6 +19,10 @@
 .esg-notice[data-esg-position="bottom-right"], .esg-notice[data-esg-position="bottom-left"] { position: fixed; bottom: 1rem; z-index: 1000; max-width: calc(100vw - 2rem); }
 .esg-notice[data-esg-position="bottom-right"] { right: 1rem; }
 .esg-notice[data-esg-position="bottom-left"] { left: 1rem; }
+/* A distinct presentation, not an alias for the theme's structural header.
+   Fixed placement still requires review for collisions, zoom and mobile menus. */
+.esg-notice[data-esg-position="top-bar"] { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; display: flex; justify-content: center; box-sizing: border-box; padding: .25rem; background: #fff; border-bottom: 2px solid #003399; }
+.esg-notice[data-esg-position="top-bar"] .esg-notice__trigger { max-width: 100%; }
 .esg-notice__trigger { display: inline-flex; align-items: center; box-sizing: border-box; color: #172b4d; background: #fff; border: 2px solid #003399; white-space: normal; min-height: 44px; }
 .esg-notice__dialog:not([open]) { display: none; }
 .esg-notice__dialog { box-sizing: border-box; color: #172b4d; background: #fff; width: min(52rem, calc(100vw - 2rem)); max-width: none; max-height: calc(100dvh - 2rem); padding: 0; border: 1px solid #53657b; border-radius: 8px; margin: auto; overflow: hidden; }
@@ -35,3 +39,4 @@
 .esg-notice__dialog a { color: #003399; text-decoration: underline; }
 .esg-notice :focus-visible { outline: 3px solid #003399; outline-offset: 3px; }
 @media (max-width: 600px) { .esg-notice__dialog { width: 100%; height: 100dvh; max-height: 100dvh; border-radius: 0; border: 0; } }
+

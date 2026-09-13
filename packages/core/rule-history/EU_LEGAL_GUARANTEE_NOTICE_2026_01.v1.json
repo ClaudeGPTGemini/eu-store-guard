@@ -1,7 +1,7 @@
 {
   "requirement": "EU_LEGAL_GUARANTEE_NOTICE",
   "rule_id": "EU_LEGAL_GUARANTEE_NOTICE_2026_01",
-  "version": 2,
+  "version": 1,
   "level": "STORE",
   "effective_from": "2026-09-27",
   "sources": [
@@ -17,8 +17,7 @@
   "accepted_entry_points": [
     "header",
     "catalog",
-    "checkout",
-    "top-bar"
+    "checkout"
   ],
   "surfaces": [
     "storefront",
@@ -95,12 +94,11 @@
             [
               "header",
               "catalog",
-              "checkout",
-              "top-bar"
+              "checkout"
             ]
           ]
         },
-        "reason": "entry_point_not_supported_by_product_policy"
+        "reason": "entry_point_not_accepted"
       },
       {
         "check": {
@@ -124,9 +122,7 @@
       }
     ],
     "verification": {
-      "checks": [
-        "$verification.noticePresentation"
-      ],
+      "checks": [],
       "surfaces": [
         "storefront",
         "checkout",
@@ -139,35 +135,6 @@
     "regime": "EMPCO_2024_825",
     "required": true,
     "max_status_when_not_verified_active": "CONFIGURED"
-  },
-  "interpretation_revision": {
-    "id": "NOTICE-PLACEMENT-2026-09-13",
-    "date": "2026-09-13",
-    "source": "https://commission.europa.eu/document/download/3e4dbee6-8184-4256-923d-c52551c7e9f0_en",
-    "section": "2.3, printed pages 15-19",
-    "basis": "Locations are non-exhaustive examples. Supported placements below are product policy, not an exhaustive legal whitelist.",
-    "supersedes_version": 1
-  },
-  "presentation_policy": {
-    "version": 1,
-    "positions": {
-      "top-bar": {
-        "decision": "supported_with_review",
-        "entry_point": "top-bar"
-      },
-      "bottom-right": {
-        "decision": "review_required",
-        "entry_point": null
-      },
-      "bottom-left": {
-        "decision": "review_required",
-        "entry_point": null
-      },
-      "inline": {
-        "decision": "review_required",
-        "entry_point": null
-      }
-    }
   }
 }
 
