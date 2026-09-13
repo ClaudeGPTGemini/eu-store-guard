@@ -3,7 +3,7 @@ export function noticeClient(session, fetchImpl = (input, init) => fetch(input, 
   const endpoint = `https://${session.shop}/admin/api/2026-07/graphql.json`;
   async function graph(query, variables = {}) {
     let r;
-    try { r = await fetchImpl(endpoint, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(15000),
+    try { r = await fetchImpl(endpoint, { method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(15000),
       headers: { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': session.token }, body: JSON.stringify({ query, variables }) });
     } catch { throw new AppError('SHOPIFY_ADMIN_UNREACHABLE', 502); }
     if (!r.ok) throw new AppError('SHOPIFY_REQUEST_FAILED', 502);

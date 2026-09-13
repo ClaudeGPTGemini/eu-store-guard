@@ -44,7 +44,7 @@ export async function onlineSession(request, env, fetchImpl = (input, init) => f
   const identity = await verifySession(token, settings);
   let response;
   try { response = await fetchImpl(`https://${identity.shop}/admin/oauth/access_token`, {
-    method: 'POST', redirect: 'error', signal: AbortSignal.timeout(15000),
+    method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(15000),
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ client_id: settings.clientId, client_secret: settings.secret,
       grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange', subject_token: token,

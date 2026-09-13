@@ -12,6 +12,19 @@ const now = Math.floor(Date.now() / 1000);
 const claims = { aud: settings.clientId, dest: `https://${settings.shop}`, iss: `https://${settings.shop}/admin`, sub: '7', iat: now, nbf: now, exp: now + 60 };
 const b64 = v => Buffer.from(JSON.stringify(v)).toString('base64url');
 
+test('Shopify redirects are rejected and never retried at their Location', async () => {
+  const request = new Request('https://worker.test/app/configuration', { headers: { Authorization: 'Bearer ' + await signed() } });
+  for (const status of [301, 302, 303, 307, 308]) {
+    let calls = 0;
+    const redirect = async (_url, options) => { calls++; assert.equal(options.redirect, 'manual'); return new Response(null, { status, headers: { Location: 'https://untrusted.example' } }); };
+    await assert.rejects(onlineSession(request, env, redirect), { message: 'SHOPIFY_AUTH_FAILED' });
+    assert.equal(calls, 1);
+    calls = 0;
+    await assert.rejects(noticeClient({ shop: settings.shop, token: 'fixture' }, redirect).read(), { message: 'SHOPIFY_REQUEST_FAILED' });
+    assert.equal(calls, 1);
+  }
+});
+
 test('Shopify transport and non-JSON failures expose only fixed stage codes', async () => {
   const token = await signed();
   const request = new Request('https://worker.test/app/configuration', { headers: { Authorization: 'Bearer ' + token } });
@@ -33,7 +46,7 @@ const reply = data => new Response(JSON.stringify(data), { headers: { 'Content-T
 function fixture({ conflict = false, owner = true } = {}) {
   const writes = [], state = snapshot();
   return { writes, state, fetch: async (url, options) => {
-    assert.equal(options.redirect, 'error'); assert.ok(options.signal);
+    assert.equal(options.redirect, 'manual'); assert.ok(options.signal);
     const body = JSON.parse(options.body);
     if (url.endsWith('/admin/oauth/access_token')) {
       assert.equal(body.requested_token_type, 'urn:shopify:params:oauth:token-type:online-access-token');
