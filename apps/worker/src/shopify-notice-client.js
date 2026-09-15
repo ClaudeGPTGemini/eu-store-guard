@@ -27,7 +27,18 @@ export function noticeClient(session, fetchImpl = (input, init) => fetch(input, 
     }
     return d;
   }
-  return { read, async write(snapshot, status, config) {
+  return { read, async readPublishedTheme() {
+    // Server-side, read-only query. Requires read_themes; never uses browser observations.
+    const data = await graph(`query NoticePublishedTheme {
+      themes(first:2,roles:[MAIN]) { pageInfo { hasNextPage } nodes {
+        id role updatedAt processing processingFailed
+        files(first:2,filenames:["sections/header-group.json"]) {
+          pageInfo { hasNextPage } nodes { filename body { ... on OnlineStoreThemeFileBodyText { content } } }
+        }
+      } }
+    }`);
+    return data.themes;
+  }, async write(snapshot, status, config) {
     // Status, mechanism and configuration migrate atomically with CAS.
     const presentation = config.decision.presentation ?? {version:1,mechanism:'header-section',themeId:null,publicationReady:false,publicVerification:'pending'};
     const metafields = [

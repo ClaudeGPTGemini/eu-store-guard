@@ -1,6 +1,7 @@
 import { evaluate } from './core-bundle.js';
 import { RULES, ACTIVATIONS } from './rules-bundle.js';
 import { AppError } from './shopify-session.js';
+import { compareThemeRevision } from './notice-theme-recheck.js';
 
 const rule = RULES.find(r => r.rule_id === 'EU_LEGAL_GUARANTEE_NOTICE_2026_01');
 export function configurationDecision(input, snapshot, deployment) {
@@ -35,9 +36,14 @@ export function configurationDecision(input, snapshot, deployment) {
     presentation: {version:1,mechanism:'header-section',themeId:deployment.themeId,sectionId:deployment.sectionId,publicationReady:true,publicVerification:'pending'} };
 }
 
-export async function saveConfiguration(client, input, deployment, now = new Date()) {
+export async function saveConfiguration(client, input, deployment, now = new Date(), requireThemeRevision = false) {
   const snapshot = await client.read();
-  const decision = configurationDecision(input, snapshot, deployment);
+  let decision = configurationDecision(input, snapshot, deployment);
+  if (requireThemeRevision && decision.status === 'CONFIGURED') {
+    let reason='theme_check_unavailable';
+    try { reason=await compareThemeRevision(await client.readPublishedTheme(),deployment,now); } catch { /* Fail closed before writing any publishable state. */ }
+    if (reason !== 'reviewed_revision_unchanged') decision={status:'NEEDS_INFORMATION',reasons:[reason],publicVerification:'pending'};
+  }
   const config = { version: 2, input, decision, updatedAt: now.toISOString() };
   return client.write(snapshot, decision.status, config);
 }
