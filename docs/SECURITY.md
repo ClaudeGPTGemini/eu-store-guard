@@ -39,3 +39,8 @@ Sandbox efímero → GitHub privado → CI sin secretos → Cloudflare Workers B
 
 ## Artefactos temporales
 Cualquier salida manual de tests, logs o verificaciones se escribe en `/tmp` o en `.scratch/` (ignorado por git). Nunca en la raiz del repositorio: un `git add -A` la versionaria por accidente.
+
+
+## Shopify DEV permission authorization — 2026-09-16
+
+The store owner explicitly authorized adding only `read_themes` to EU Store Guard DEV, alongside the existing `read_locales`. Purpose: owner-authenticated `compareThemeRevision` reads the published theme role, ID, updatedAt and `sections/header-group.json` for invalidation against reviewed evidence. This permission reads themes; it does not authorize theme writes, customer/order access, product writes or file uploads. If Shopify requests broader access, stop before consent. Authorization does not itself prove the installed app has received the scope: live grant verification is required. The theme recheck feature remains disabled until a reviewed live baseline is recorded. No production release, merge, expenditure or secret rotation is authorized by this change.

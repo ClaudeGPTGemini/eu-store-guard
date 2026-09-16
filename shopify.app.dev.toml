@@ -9,7 +9,7 @@ automatically_update_urls_on_dev = false
 dev_store_url = "eu-store-guard-dev.myshopify.com"
 
 [access_scopes]
-scopes = "read_locales"
+scopes = "read_locales,read_themes"
 
 [auth]
 redirect_urls = []

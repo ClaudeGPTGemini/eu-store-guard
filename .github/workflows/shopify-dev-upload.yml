@@ -48,3 +48,5 @@ jobs:
 # Header block display name respects Shopify's 25-character limit.
 # DEV-only hidden boolean diagnostics identify a rejected runtime binding without exposing data.
 # Use supported section.id and schema header-group restriction; parent section.location is inaccessible.
+
+# 2026-09-16: owner-authorized read_themes added to read_locales for DEV theme invalidation; upload without release.
