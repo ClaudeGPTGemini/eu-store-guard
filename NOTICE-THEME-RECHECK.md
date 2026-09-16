@@ -26,3 +26,7 @@ An unchanged review can only preserve an already CONFIGURED, enabled, publicatio
 The whole Worker suite was rerun: 76/76, zero failures/skips. Lint and secret scan passed. Other unchanged suites were previously 29 core + 57 extension + 6 packaging; combined expected total is now 168. A fresh installation and independent review remain separate work.
 
 Sources: https://shopify.dev/docs/api/admin-graphql/2026-07/queries/themes and https://shopify.dev/docs/api/admin-graphql/2026-07/objects/OnlineStoreTheme .
+
+## Historical UI summary (2026-09-16)
+
+GET, save and theme recheck responses now expose only a validated historical timestamp and whether that observation matched the reviewed revision. Missing, invalid or future dates produce no summary. The UI labels the date as the last attempt, describes the observation in the past, and explicitly says there is no continuous monitoring and no confirmation of visibility. A failed observation is not displayed as a successful check. Configuration saves record the attempted theme check when the guard executes; ordinary configuration updates do not masquerade as theme-check dates. The whole Worker suite is now 78/78; lint and secret scan pass. This remains undeployed and requires independent review and live prerequisites already listed above.

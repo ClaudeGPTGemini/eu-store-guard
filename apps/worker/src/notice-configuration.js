@@ -43,6 +43,7 @@ export async function saveConfiguration(client, input, deployment, now = new Dat
     let reason='theme_check_unavailable';
     try { reason=await compareThemeRevision(await client.readPublishedTheme(),deployment,now); } catch { /* Fail closed before writing any publishable state. */ }
     if (reason !== 'reviewed_revision_unchanged') decision={status:'NEEDS_INFORMATION',reasons:[reason],publicVerification:'pending'};
+    decision.themeCheck={checkedAt:now.toISOString(),reason,scope:'admin-theme-revision',publicVerification:'pending'};
   }
   const config = { version: 2, input, decision, updatedAt: now.toISOString() };
   return client.write(snapshot, decision.status, config);

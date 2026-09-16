@@ -3,6 +3,7 @@ import { noticeClient } from './shopify-notice-client.js';
 import { saveConfiguration } from './notice-configuration.js';
 import { activationScript } from './notice-activation.js';
 import { recheckNoticeTheme } from './notice-theme-recheck.js';
+import { checkSummary } from './notice-check-summary.js';
 
 const json = (value, status = 200) => new Response(JSON.stringify(value), { status, headers: {
   'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff',
@@ -12,8 +13,9 @@ const json = (value, status = 200) => new Response(JSON.stringify(value), { stat
 const appScript = `const form=document.querySelector('form'),message=document.querySelector('[role="status"]'),save=document.querySelector('button');
 async function call(method,body,path='/app/configuration'){const token=await shopify.idToken();const r=await fetch(path,{method,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const d=await r.json();if(!r.ok)throw Error(d.error);return d;}
 function describe(status){return status==='CONFIGURED'?'Configuración guardada. Aún no hemos confirmado que el aviso se muestre. Añade la sección al grupo Header y comprueba la tienda.':status==='NOT_APPLICABLE'?'Aviso desactivado según los datos indicados.':'El aviso permanece desactivado. Falta completar o validar la configuración.';}
-form.addEventListener('submit',async e=>{e.preventDefault();save.disabled=true;try{const d=await call('POST',{enabled:form.elements.enabled.checked,sellsGoodsToConsumers:form.elements.goods.checked,marketCountry:'ES',locale:'es'});message.textContent=describe(d.status);}catch{message.textContent='No se pudo confirmar el guardado. Recarga la app y vuelve a intentarlo.';}finally{save.disabled=false;}});
-call('GET').then(async d=>{form.elements.enabled.checked=d.input?.enabled===true;form.elements.goods.checked=d.input?.sellsGoodsToConsumers===true;const current=d.themeRecheckRequired?await call('POST',{},'/app/recheck-theme'):d;message.textContent=describe(current.status);save.disabled=false;}).catch(error=>{const codes=['SHOPIFY_AUTH_UNREACHABLE','SHOPIFY_AUTH_INVALID_RESPONSE','SHOPIFY_ADMIN_UNREACHABLE','SHOPIFY_ADMIN_INVALID_RESPONSE','INVALID_SESSION','SHOPIFY_AUTH_FAILED','SHOP_OWNER_REQUIRED','SHOPIFY_REQUEST_FAILED','SHOPIFY_QUERY_REJECTED','SHOPIFY_IDENTITY_MISMATCH','METAFIELD_MIGRATION_REQUIRED','APP_REQUEST_FAILED','APP_NOT_CONFIGURED'];message.textContent='No se ha podido conectar con Shopify. Abre esta app desde la administración con la cuenta propietaria.'+(codes.includes(error.message)?' Diagnóstico: '+error.message+'.':'');});`;
+function describeCheck(check){const warning=' No hay vigilancia continua: los cambios posteriores pueden no detectarse hasta volver a abrir la app o guardar. Esta comprobación no confirma que el aviso sea visible.';if(!check||typeof check.checkedAt!=='string'||!Number.isFinite(Date.parse(check.checkedAt)))return ' No hay una comprobación del tema registrada.'+warning;return ' Último intento de comprobación del tema: '+new Date(check.checkedAt).toLocaleString('es-ES')+'. '+(check.unchanged===true?'En ese momento no se detectaron cambios respecto a la revisión.':'No se confirmó que el tema conservara la revisión.')+warning;}
+form.addEventListener('submit',async e=>{e.preventDefault();save.disabled=true;try{const d=await call('POST',{enabled:form.elements.enabled.checked,sellsGoodsToConsumers:form.elements.goods.checked,marketCountry:'ES',locale:'es'});message.textContent=describe(d.status)+describeCheck(d.themeCheck);}catch{message.textContent='No se pudo confirmar el guardado. Recarga la app y vuelve a intentarlo.';}finally{save.disabled=false;}});
+call('GET').then(async d=>{form.elements.enabled.checked=d.input?.enabled===true;form.elements.goods.checked=d.input?.sellsGoodsToConsumers===true;const current=d.themeRecheckRequired?await call('POST',{},'/app/recheck-theme'):d;message.textContent=describe(current.status)+describeCheck(current.themeCheck);save.disabled=false;}).catch(error=>{const codes=['SHOPIFY_AUTH_UNREACHABLE','SHOPIFY_AUTH_INVALID_RESPONSE','SHOPIFY_ADMIN_UNREACHABLE','SHOPIFY_ADMIN_INVALID_RESPONSE','INVALID_SESSION','SHOPIFY_AUTH_FAILED','SHOP_OWNER_REQUIRED','SHOPIFY_REQUEST_FAILED','SHOPIFY_QUERY_REJECTED','SHOPIFY_IDENTITY_MISMATCH','METAFIELD_MIGRATION_REQUIRED','APP_REQUEST_FAILED','APP_NOT_CONFIGURED'];message.textContent='No se ha podido conectar con Shopify. Abre esta app desde la administración con la cuenta propietaria.'+(codes.includes(error.message)?' Diagnóstico: '+error.message+'.':'');});`;
 
 async function body(request) {
   if (request.headers.get('content-type')?.split(';')[0] !== 'application/json') throw new AppError('JSON_REQUIRED', 415);
@@ -51,17 +53,17 @@ export async function handleNoticeApp(request, env, fetchImpl = (input, init) =>
       let deployment=null;
       try { deployment=JSON.parse(env.NOTICE_DEPLOYMENT_EVIDENCE ?? 'null'); } catch { /* No review means no permission to preserve publication. */ }
       const result=await recheckNoticeTheme(client,deployment);
-      return json({status:result.status,reason:result.config.decision.themeCheck.reason,publicVerification:'pending'});
+      return json({status:result.status,reason:result.config.decision.themeCheck.reason,themeCheck:checkSummary(result.config.decision.themeCheck),publicVerification:'pending'});
     }
     if (request.method === 'GET') {
-      const snapshot = await client.read(); let input;
-      try { input = JSON.parse(snapshot.currentAppInstallation.config?.value ?? 'null')?.input; } catch { throw new AppError('METAFIELD_MIGRATION_REQUIRED', 409); }
-      return json({ status: snapshot.shop.notice?.value ?? 'NEEDS_INFORMATION', input, themeRecheckRequired:env.NOTICE_THEME_RECHECK_ENABLED==='true' && input?.enabled===true && !!snapshot.shop.presentation });
+      const snapshot = await client.read(); let input, stored;
+      try { stored = JSON.parse(snapshot.currentAppInstallation.config?.value ?? 'null'); input=stored?.input; } catch { throw new AppError('METAFIELD_MIGRATION_REQUIRED', 409); }
+      return json({ status: snapshot.shop.notice?.value ?? 'NEEDS_INFORMATION', input, themeCheck:checkSummary(stored?.decision?.themeCheck), themeRecheckRequired:env.NOTICE_THEME_RECHECK_ENABLED==='true' && input?.enabled===true && !!snapshot.shop.presentation });
     }
     let deployment = null;
     try { deployment = JSON.parse(env.NOTICE_DEPLOYMENT_EVIDENCE ?? 'null'); } catch { /* Missing deployment review must retract, not enable. */ }
     const result = await saveConfiguration(client, input, deployment, new Date(), env.NOTICE_THEME_RECHECK_ENABLED==='true');
-    return json({ status: result.status, reasons: result.config.decision.reasons, publicVerification: 'pending' });
+    return json({ status: result.status, reasons: result.config.decision.reasons, themeCheck:checkSummary(result.config.decision.themeCheck), publicVerification: 'pending' });
   } catch (error) {
     // Do not expose Shopify bodies, identifiers, tokens or exception details.
     return json({ error: error instanceof AppError ? error.message : 'APP_REQUEST_FAILED' }, error instanceof AppError ? error.status : 502);
