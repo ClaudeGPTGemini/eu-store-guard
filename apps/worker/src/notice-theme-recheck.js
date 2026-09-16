@@ -28,6 +28,7 @@ export async function compareThemeRevision(connection, deployment, now) {
 export async function recheckNoticeTheme(client, deployment, now=new Date()) {
   if (!(now instanceof Date) || !Number.isFinite(now.getTime())) throw new AppError('INVALID_CHECK_TIME');
   const snapshot=await client.read();
+  if (typeof deployment === 'function') deployment = deployment(snapshot);
   let config,presentation;
   try {
     config=JSON.parse(snapshot.currentAppInstallation.config?.value ?? 'null');

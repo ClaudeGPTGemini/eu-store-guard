@@ -38,6 +38,7 @@ export function configurationDecision(input, snapshot, deployment) {
 
 export async function saveConfiguration(client, input, deployment, now = new Date(), requireThemeRevision = false) {
   const snapshot = await client.read();
+  if (typeof deployment === 'function') deployment = deployment(snapshot);
   let decision = configurationDecision(input, snapshot, deployment);
   if (requireThemeRevision && decision.status === 'CONFIGURED') {
     let reason='theme_check_unavailable';
