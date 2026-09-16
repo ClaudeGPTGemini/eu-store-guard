@@ -17,3 +17,7 @@ Onboarding recommends only the real header block, explicitly excludes the DEV in
 Runtime migration sequence: deploy validated code to DEV; add the real block to Header in Horizon draft; save through the authenticated app; verify rendering without the preview switch; inspect storefront pages and interactions; deactivate the old embed in the theme. Do not delete the old file or call the migration publicly verified before these checks. Dawn, physical phone and screen reader remain separate acceptance work. No production release, merge or expenditure is authorized by this document.
 
 Runtime correction: app extensions cannot read section.location and Liquid theme is deprecated. The initial guards were rejected in the live DEV test and replaced by supported section.id plus the schema group restriction. Theme ID is review metadata, not a claimed runtime theme check. Copying an entire reviewed configuration needs re-review; no universal anti-copy guarantee is claimed.
+
+## Rule version provenance
+
+The machine-readable record `packages/core/rule-history/EU_LEGAL_GUARANTEE_NOTICE_2026_01.v3-revision.json` records the v2-to-v3 product-policy change and binds both rule versions by the same SHA-256 serialization used in the Evidence Log. The retained `interpretation_revision` describes the earlier v1-to-v2 normative correction; it is not the version history of every subsequent product-policy change. The provenance record was added on 2026-09-16 after the audit of `a16db964`, without rewriting the audited rule or its hash.

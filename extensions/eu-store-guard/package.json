@@ -9,6 +9,6 @@
     "assets:drift": "node scripts/import-official-assets.mjs --drift"
   },
   "devDependencies": {
-    "liquidjs": "^10.29.0"
+    "liquidjs": "10.29.0"
   }
 }
