@@ -31,3 +31,7 @@ Real signer provisioning, controlled DEV migration and runtime verification have
 ## Tests
 
 Nine new Worker tests: first approval stays disabled then explicit save configures; tampering/unsigned/missing-key rejection; expiry/future/excess-duration rejection; shop/install/digest/theme binding; replay and renewal; remove/restore cannot revive; expiry retracts; atomic write conflicts; HTTP owner/origin/DEV/flag/signature boundaries and gated UI. Worker total 99, all pass locally. Lint and secret scan pass. CI build is the Linux packaging check; no live deployment was requested by this candidate.
+
+## Mandatory operating procedure
+
+See docs/ASSISTED-REVIEW-PROCEDURE.md and docs/reviews/REVIEW-RECORD.template.json. Custody is not yet provisioned. A signed dossier hash binds the retained record but does not prove that its observations occurred. Operator evidence checks are procedural, not enforced by the current signer. A compromised Worker can bypass verification even without stealing the private key.

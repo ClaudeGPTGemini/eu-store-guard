@@ -1,0 +1,99 @@
+{
+  "templateVersion": 1,
+  "status": "UNFILLED_NOT_EVIDENCE",
+  "reviewId": null,
+  "reviewer": {
+    "id": null,
+    "name": null
+  },
+  "reviewedAt": null,
+  "scope": "assisted-placement",
+  "shop": {
+    "domain": null,
+    "id": null,
+    "installationId": null
+  },
+  "theme": {
+    "id": null,
+    "updatedAt": null,
+    "headerSha256": null,
+    "sectionId": null
+  },
+  "software": {
+    "commit": null,
+    "extensionVersion": null
+  },
+  "pages": [
+    {
+      "page": "home",
+      "url": null,
+      "accessMode": null,
+      "observedAt": null,
+      "result": "pending",
+      "screenshots": [],
+      "notes": null
+    },
+    {
+      "page": "product",
+      "url": null,
+      "accessMode": null,
+      "observedAt": null,
+      "result": "pending",
+      "screenshots": [],
+      "notes": null
+    },
+    {
+      "page": "collection",
+      "url": null,
+      "accessMode": null,
+      "observedAt": null,
+      "result": "pending",
+      "screenshots": [],
+      "notes": null
+    },
+    {
+      "page": "cart",
+      "url": null,
+      "accessMode": null,
+      "observedAt": null,
+      "result": "pending",
+      "screenshots": [],
+      "notes": null
+    },
+    {
+      "page": "search",
+      "url": null,
+      "accessMode": null,
+      "observedAt": null,
+      "result": "pending",
+      "screenshots": [],
+      "notes": null
+    }
+  ],
+  "checks": {
+    "placement": "pending",
+    "coverage": "pending",
+    "headerControlsUnobstructed": "pending",
+    "noDuplicateOrInspectionBlock": "pending",
+    "modalOpenClose": "pending",
+    "keyboardAndFocus": "pending",
+    "spanishTranscription": "pending",
+    "officialImageAndLinks": "pending",
+    "physicalPhone": {
+      "status": "pending",
+      "device": null,
+      "result": null
+    },
+    "screenReader": {
+      "status": "pending",
+      "software": null,
+      "device": null,
+      "result": null
+    }
+  },
+  "limitations": [],
+  "decision": "NOT_APPROVED",
+  "expiresAt": null,
+  "previousReviewId": null,
+  "postApplicationRecordId": null
+}
