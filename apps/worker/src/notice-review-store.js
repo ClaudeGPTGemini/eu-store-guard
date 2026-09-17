@@ -1,15 +1,17 @@
 // Stored reviews are app data, not merchant assertions or automated observations.
+import {approvalEvidence} from './notice-assisted-review.js';
 import { AppError } from './shopify-session.js';
 import { configurationDecision } from './notice-configuration.js';
 import { compareThemeRevision } from './notice-theme-recheck.js';
 
-export function storedNoticeReview(snapshot) {
+export function storedNoticeReview(snapshot,now=new Date()) {
   let record;
   try { record=JSON.parse(snapshot.currentAppInstallation.review?.value ?? 'null'); } catch { return null; }
-  if (!record || record.version !== 1 || record.shop !== snapshot.shop.myshopifyDomain ||
+  if (!record || ![1,2].includes(record.version) || record.shop !== snapshot.shop.myshopifyDomain ||
       record.shopId !== snapshot.shop.id || record.installationId !== snapshot.currentAppInstallation.id ||
-      record.evidence?.shop !== record.shop || record.source !== 'reviewed-dev-migration') return null;
-  return record.evidence;
+      record.evidence?.shop !== record.shop) return null;
+  if(record.version===2)return approvalEvidence(record,now);
+  return record.source==='reviewed-dev-migration'?record.evidence:null;
 }
 
 export function noticeReviewSource(env) {

@@ -45,7 +45,7 @@ export function noticeClient(session, fetchImpl = (input, init) => fetch(input, 
       } }
     }`);
     return data.themes;
-  }, async write(snapshot, status, config) {
+  }, async write(snapshot, status, config, reviewOverride) {
     // Status, mechanism and configuration migrate atomically with CAS.
     const presentation = config.decision.presentation ?? {version:1,mechanism:'header-section',themeId:null,publicationReady:false,publicVerification:'pending'};
     const metafields = [
@@ -54,7 +54,7 @@ export function noticeClient(session, fetchImpl = (input, init) => fetch(input, 
       { ownerId: snapshot.shop.id, namespace: 'eu_store_guard', key: 'notice_presentation', type: 'json', value: JSON.stringify(presentation), compareDigest: snapshot.shop.presentation?.compareDigest ?? null }
     ];
     // Include the exact reviewed value in the same CAS transaction as publication.
-    if (snapshot.currentAppInstallation.review) metafields.push({ownerId:snapshot.currentAppInstallation.id,namespace:'eu_store_guard',key:'notice_review',type:'json',value:snapshot.currentAppInstallation.review.value,compareDigest:snapshot.currentAppInstallation.review.compareDigest});
+    if (snapshot.currentAppInstallation.review || reviewOverride) metafields.push({ownerId:snapshot.currentAppInstallation.id,namespace:'eu_store_guard',key:'notice_review',type:'json',value:reviewOverride?JSON.stringify(reviewOverride):snapshot.currentAppInstallation.review.value,compareDigest:snapshot.currentAppInstallation.review?.compareDigest ?? null});
     const data = await graph(`mutation SaveNotice($metafields:[MetafieldsSetInput!]!){metafieldsSet(metafields:$metafields){metafields{namespace key value compareDigest} userErrors{code}}}`, { metafields });
     if (data.metafieldsSet?.userErrors?.length) throw new AppError('SAVE_REJECTED_RELOAD', 409);
     const written = data.metafieldsSet?.metafields;

@@ -14,7 +14,7 @@ test('served UI describes dated observations in the past and warns about the mon
   const env={APP_ENV:'development',SHOPIFY_APP_ENABLED:'true',SHOPIFY_CLIENT_ID:'a'.repeat(32),SHOPIFY_CLIENT_SECRET:'fixture-only-'.repeat(4),SHOPIFY_ALLOWED_SHOP:'eu-store-guard-dev.myshopify.com'};
   const response=await handleNoticeApp(new Request('https://worker.example/app/app.js'),env);
   const source=await response.text();
-  const context={document:{querySelector:selector=>selector==='#inspect-theme'||selector==='#theme-observation'?null:{}}};
+  const context={document:{querySelector:selector=>['#inspect-theme','#theme-observation','#review-file','#review-message'].includes(selector)?null:{}}};
   runInNewContext(source.split("form.addEventListener('submit'")[0],context);
   const result=context.describeCheck({checkedAt:now.toISOString(),unchanged:true});
   assert.match(result,/16\/9\/2026/);assert.match(result,/En ese momento/);assert.match(result,/No hay vigilancia continua/);assert.match(result,/no confirma que el aviso sea visible/);

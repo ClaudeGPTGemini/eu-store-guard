@@ -1,3 +1,4 @@
+import {invalidatedReview} from './notice-assisted-review.js';
 // Invalidation only. An unchanged reviewed theme does not prove storefront visibility.
 import { AppError } from './shopify-session.js';
 
@@ -28,7 +29,7 @@ export async function compareThemeRevision(connection, deployment, now) {
 export async function recheckNoticeTheme(client, deployment, now=new Date()) {
   if (!(now instanceof Date) || !Number.isFinite(now.getTime())) throw new AppError('INVALID_CHECK_TIME');
   const snapshot=await client.read();
-  if (typeof deployment === 'function') deployment = deployment(snapshot);
+  if (typeof deployment === 'function') deployment = deployment(snapshot,now);
   let config,presentation;
   try {
     config=JSON.parse(snapshot.currentAppInstallation.config?.value ?? 'null');
@@ -51,5 +52,5 @@ export async function recheckNoticeTheme(client, deployment, now=new Date()) {
     presentation:{...presentation,publicationReady:keepConfigured,publicVerification:'pending'},
     themeCheck:{checkedAt:now.toISOString(),reason,scope:'admin-theme-revision',publicVerification:'pending'}};
   // The existing writer executes one atomic CAS mutation. Conflicts are not retried.
-  return client.write(snapshot,status,{...config,decision,updatedAt:now.toISOString()});
+  return client.write(snapshot,status,{...config,decision,updatedAt:now.toISOString()},reason==='reviewed_revision_unchanged'?undefined:invalidatedReview(snapshot,reason,now));
 }

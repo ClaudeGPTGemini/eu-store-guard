@@ -1,3 +1,4 @@
+import {invalidatedReview} from './notice-assisted-review.js';
 import { evaluate } from './core-bundle.js';
 import { RULES, ACTIVATIONS } from './rules-bundle.js';
 import { AppError } from './shopify-session.js';
@@ -17,7 +18,7 @@ export function configurationDecision(input, snapshot, deployment) {
   if (deployment?.entryPoint !== 'header-section' || deployment.shop !== snapshot.shop.myshopifyDomain ||
       typeof deployment.themeId !== 'string' || !/^[1-9][0-9]*$/.test(deployment.themeId) ||
       typeof deployment.sectionId !== 'string' || !/^sections--[1-9][0-9]*__[a-zA-Z0-9_-]+$/.test(deployment.sectionId) ||
-      deployment.reviewScope !== 'editor-placement' || deployment.reviewRecord !== 'DEV-SECTION-COVERAGE.md') {
+      !((deployment.reviewScope === 'editor-placement' && deployment.reviewRecord === 'DEV-SECTION-COVERAGE.md') || (deployment.reviewScope === 'assisted-placement' && typeof deployment.reviewRecord === 'string' && /^[a-zA-Z0-9_-]{8,100}$/.test(deployment.reviewRecord)))) {
     return { status: 'NEEDS_INFORMATION', reasons: ['header_section_review_pending'] };
   }
   // Server-owned presentation review is not merchant self-certification.
@@ -38,7 +39,7 @@ export function configurationDecision(input, snapshot, deployment) {
 
 export async function saveConfiguration(client, input, deployment, now = new Date(), requireThemeRevision = false) {
   const snapshot = await client.read();
-  if (typeof deployment === 'function') deployment = deployment(snapshot);
+  if (typeof deployment === 'function') deployment = deployment(snapshot,now);
   let decision = configurationDecision(input, snapshot, deployment);
   if (requireThemeRevision && decision.status === 'CONFIGURED') {
     let reason='theme_check_unavailable';
@@ -47,5 +48,6 @@ export async function saveConfiguration(client, input, deployment, now = new Dat
     decision.themeCheck={checkedAt:now.toISOString(),reason,scope:'admin-theme-revision',publicVerification:'pending'};
   }
   const config = { version: 2, input, decision, updatedAt: now.toISOString() };
-  return client.write(snapshot, decision.status, config);
+  const invalid=(!deployment || decision.themeCheck && decision.themeCheck.reason!=='reviewed_revision_unchanged')?invalidatedReview(snapshot,decision.themeCheck?.reason ?? 'review_unavailable',now):undefined;
+  return client.write(snapshot, decision.status, config,invalid);
 }
