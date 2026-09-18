@@ -1,0 +1,57 @@
+{
+  "publisher": "European Commission, Directorate-General for Justice and Consumers",
+  "page": "https://commission.europa.eu/publications/practical-guidelines-and-high-resolution-vector-files-eu-notice-and-label-product-guarantees_en",
+  "publication_date": "2026-03-19",
+  "legal_basis": "Commission Implementing Regulation (EU) 2025/1960",
+  "packages": [
+    {
+      "id": "notice_svg",
+      "description": "EU harmonised notice, all 24 EU languages, colour and black and white, SVG",
+      "url": "https://commission.europa.eu/document/download/27c45f1f-78a1-47a7-a7cc-adf23afee5ea_en?filename=SVG.zip",
+      "expected_size_mb": 2.71,
+      "target_prefix": "notice-",
+      "target_suffix": "-rgb.svg"
+    },
+    {
+      "id": "garan_label",
+      "description": "EU GARAN product label: colour, black and white, and nested display for e-commerce",
+      "url": "https://commission.europa.eu/document/download/435fbeb1-fccc-4ead-bfa9-96625962ba09_en?filename=GARAN%20label%20for%20website.zip",
+      "expected_size_mb": 1.78,
+      "variants": [
+        {
+          "id": "full",
+          "target": "garan-rgb.svg",
+          "match": [
+            "garan"
+          ],
+          "exclude": [
+            "nested",
+            "compact",
+            "anidad"
+          ],
+          "description": "Etiqueta GARAN completa en color"
+        },
+        {
+          "id": "nested",
+          "target": "garan-nested-rgb.svg",
+          "match": [
+            "nested"
+          ],
+          "exclude": [],
+          "description": "Presentacion anidada, solo para e-commerce"
+        }
+      ]
+    },
+    {
+      "id": "guidelines_pdf",
+      "description": "Practical guidelines for sellers and producers (reference only, not shipped)",
+      "url": "https://commission.europa.eu/document/download/3e4dbee6-8184-4256-923d-c52551c7e9f0_en?filename=Practical%20guidelines%20Harmonised%20Label%26Notice%20product%20guarantees_ARES%2027042026.pdf",
+      "ship": false
+    }
+  ],
+  "policy": {
+    "colour_only_online": "Online solo se usa la version en color. La version en blanco y negro es exclusiva de tienda fisica.",
+    "no_modification": "Los archivos se copian sin alterar colores, tipografia, proporciones, QR ni contenido.",
+    "traceability": "Se registra el SHA-256 de cada archivo en assets-manifest.json. Es control interno de trazabilidad, no una exigencia legal."
+  }
+}

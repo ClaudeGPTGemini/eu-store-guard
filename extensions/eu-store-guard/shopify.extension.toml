@@ -1,0 +1,9 @@
+# Theme App Extension de EU Store Guard.
+# Publica el aviso armonizado de garantia legal (nivel tienda) y la etiqueta GARAN (nivel producto)
+# sin modificar el codigo del tema del comerciante.
+api_version = "2025-07"
+
+[[extensions]]
+type = "theme"
+name = "EU Store Guard"
+handle = "eu-store-guard"

@@ -4,6 +4,7 @@
 import { evaluateRule } from "./evaluator.js";
 import { evidenceEntry } from "./evidenceLog.js";
 import { activationFor, ACTIVATION } from "./activation.js";
+import { createHash } from "node:crypto";
 
 export const RANK = Object.freeze({ NEEDS_INFORMATION: 0, CONFIGURED: 1, LIVE_PARTIAL: 2, LIVE_VERIFIED: 3 });
 
@@ -25,6 +26,13 @@ export function evaluate(rule, ctx) {
       if (RANK[status] > RANK[max]) { status = max; reasons.push(`market_activation_${activation.status}`); }
     }
   }
-  const log = evidenceEntry({ storeId: ctx.storeId, marketCountry: ctx.market?.marketCountry, locale: ctx.market?.storefrontLocale, productId: ctx.productId ?? null, ruleId: rule.rule_id, ruleVersion: rule.version, status, technicalStatus: tech.status, reasons, assetHash: ctx.evidence?.assetHash ?? null, activation });
+  const presentation = rule.requirement === 'EU_LEGAL_GUARANTEE_NOTICE' ? {
+    interpretation_revision: rule.interpretation_revision?.id ?? null,
+    entry_point: typeof ctx.evidence?.entryPoint === 'string' && ctx.evidence.entryPoint.length <= 64 ? ctx.evidence.entryPoint : null,
+    review_declared: ctx.evidence?.reviewed === true,
+    verification_reported: ctx.verification?.noticePresentation === true
+  } : null;
+  const ruleHash = createHash('sha256').update(JSON.stringify(rule)).digest('hex');
+  const log = evidenceEntry({ storeId: ctx.storeId, marketCountry: ctx.market?.marketCountry, locale: ctx.market?.storefrontLocale, productId: ctx.productId ?? null, ruleId: rule.rule_id, ruleVersion: rule.version, ruleHash, presentation, status, technicalStatus: tech.status, reasons, assetHash: ctx.evidence?.assetHash ?? null, activation });
   return { status, technical_status: tech.status, reasons, derived: tech.derived, activation, log };
 }

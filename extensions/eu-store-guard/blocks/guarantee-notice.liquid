@@ -1,0 +1,71 @@
+{%- comment -%}
+  EU Store Guard - Aviso armonizado de garantia legal (Reglamento de Ejecucion (UE) 2025/1960).
+
+  App embed block: se activa a nivel de tienda desde el editor de temas, sin tocar el codigo del tema.
+
+  Reglas que implementa, alineadas con packages/core/rules/EU_LEGAL_GUARANTEE_NOTICE_2026_01.json:
+   - Usa EXCLUSIVAMENTE el archivo oficial de la Comision, en RGB, sin modificar colores,
+     tipografia, QR, proporciones ni contenido.
+   - Resuelve el idioma por el locale del escaparate. Si el locale no esta entre las 24 lenguas
+     oficiales de la UE, NO hace fallback silencioso a ingles: no pinta nada y marca revision.
+   - Punto de entrada visible a nivel tienda; el aviso completo es accesible en 1 interaccion.
+   - Incluye enlace clicable al mismo destino que el QR (Your Europe).
+
+  Los SVG oficiales se importan del paquete publicado por la Comision y se suben a assets/
+  con el nombre notice-<locale>-rgb.svg. Este codigo no los genera ni los redibuja.
+{%- endcomment -%}
+
+{%- comment -%} Contrato de estados: el aviso solo se publica con datos completos validados por el core. {%- endcomment -%}
+{%- assign notice_status = shop.metafields.eu_store_guard.notice_status.value -%}
+{%- assign renderable = 'CONFIGURED,LIVE_PARTIAL,LIVE_VERIFIED' | split: ',' -%}
+{%- assign can_render = false -%}
+{%- for st in renderable -%}{%- if st == notice_status -%}{%- assign can_render = true -%}{%- endif -%}{%- endfor -%}
+
+{%- assign eu_locales = 'bg,hr,cs,da,nl,de,el,en,et,fi,fr,hu,ga,it,lt,lv,mt,pl,pt,ro,sk,sl,es,sv' | split: ',' -%}
+{%- assign current = request.locale.iso_code | split: '-' | first | downcase -%}
+{%- assign supported = false -%}
+{%- for l in eu_locales -%}{%- if l == current -%}{%- assign supported = true -%}{%- endif -%}{%- endfor -%}
+
+{%- assign position = block.settings.position | default: 'top-bar' -%}
+{%- comment -%} Product policy v1: legacy positions require review, not a claim of legal prohibition. {%- endcomment -%}
+{%- unless position == 'top-bar' -%}{%- assign can_render = false -%}{%- endunless -%}
+{%- if shop.metafields.eu_store_guard.notice_presentation.value.mechanism == 'header-section' -%}{%- assign can_render = false -%}{%- endif -%}
+{%- if can_render and supported -%}
+  {%- assign notice_asset = 'notice-' | append: current | append: '-rgb.svg' -%}
+  <div class="esg-notice" data-esg-position="{{ position | escape }}" data-esg-locale="{{ current }}" data-esg-rule="EU_LEGAL_GUARANTEE_NOTICE_2026_01" data-esg-status="{{ notice_status | escape }}" data-esg-transcription="{% if current == 'es' %}visually-checked{% else %}pending{% endif %}">
+    <a href="{{ notice_asset | asset_url }}" class="esg-notice__trigger" aria-haspopup="dialog" aria-expanded="false" aria-controls="esg-notice-panel-{{ block.id }}">
+      {{ 'guarantee.open' | t }}
+    </a>
+    <dialog id="esg-notice-panel-{{ block.id }}" class="esg-notice__dialog" aria-labelledby="esg-notice-title-{{ block.id }}">
+      <header class="esg-notice__header">
+        <h2 id="esg-notice-title-{{ block.id }}" tabindex="-1" autofocus>{{ 'guarantee.title' | t }}</h2>
+        <form method="dialog"><button type="submit" class="esg-notice__close">{{ 'guarantee.close' | t }}</button></form>
+      </header>
+      <div class="esg-notice__content">
+        <img class="esg-notice__asset" src="{{ notice_asset | asset_url }}" width="59528" height="84189" {% if current == 'es' %}alt="" aria-hidden="true"{% else %}alt="{{ 'guarantee.image_description' | t | escape }}"{% endif %} decoding="async">
+        <a href="{{ notice_asset | asset_url }}" target="_blank" rel="noopener">{{ 'guarantee.enlarge' | t }}</a>
+        {%- if current == 'es' -%}{% render 'notice-transcript-es' %}{%- endif -%}
+        <a class="esg-notice__link" href="https://europa.eu/youreurope/citizens/consumers/shopping/guarantees-returns/index_{{ current }}.htm" target="_blank" rel="noopener">{{ 'guarantee.learn_more' | t }}</a>
+      </div>
+    </dialog>
+  </div>
+{%- elsif can_render == false -%}
+  {%- comment -%} Estado no publicable: no se pinta nada. La retraccion es inmediata en el siguiente render. {%- endcomment -%}
+{%- else -%}
+  {%- comment -%} Locale fuera de las 24 oficiales: se omite deliberadamente. Guard lo marca como LANGUAGE_REVIEW_REQUIRED. {%- endcomment -%}
+  <span class="esg-notice" data-esg-status="LANGUAGE_REVIEW_REQUIRED" data-esg-locale="{{ current }}" hidden></span>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "EU legal guarantee notice",
+  "target": "body",
+  "javascript": "eu-store-guard.js",
+  "stylesheet": "eu-store-guard.css",
+  "settings": [
+    { "type": "paragraph", "content": "Muestra el aviso armonizado oficial de garantia legal de la UE. Obligatorio desde el 27 de septiembre de 2026 para ventas B2C de bienes de consumo en la UE. Este bloque no sustituye asesoramiento juridico." },
+    { "type": "select", "id": "position", "label": "Position", "default": "top-bar",
+      "options": [ { "value": "top-bar", "label": "Top bar (requires presentation review)" }, { "value": "bottom-right", "label": "Bottom right (publication blocked pending review)" }, { "value": "bottom-left", "label": "Bottom left (publication blocked pending review)" }, { "value": "inline", "label": "Footer (publication blocked pending review)" } ] }
+  ]
+}
+{% endschema %}

@@ -39,3 +39,12 @@ Sandbox efímero → GitHub privado → CI sin secretos → Cloudflare Workers B
 
 ## Artefactos temporales
 Cualquier salida manual de tests, logs o verificaciones se escribe en `/tmp` o en `.scratch/` (ignorado por git). Nunca en la raiz del repositorio: un `git add -A` la versionaria por accidente.
+
+
+## Shopify DEV permission authorization — 2026-09-16
+
+The store owner explicitly authorized adding only `read_themes` to EU Store Guard DEV, alongside the existing `read_locales`. Purpose: owner-authenticated `compareThemeRevision` reads the published theme role, ID, updatedAt and `sections/header-group.json` for invalidation against reviewed evidence. This permission reads themes; it does not authorize theme writes, customer/order access, product writes or file uploads. If Shopify requests broader access, stop before consent. Authorization does not itself prove the installed app has received the scope: live grant verification is required. The theme recheck feature remains disabled until a reviewed live baseline is recorded. No production release, merge, expenditure or secret rotation is authorized by this change.
+
+### Live DEV consent verification — 2026-09-16
+
+Commit 4f605ae8b8c1e89e2342ce084a7e4a5996797b03 passed all eight CI checks and the separate Shopify upload job (run 35121654580). Shopify version eu-store-guard-dev-14 (1131478646785) was released only for EU Store Guard DEV and displayed exactly read_locales,read_themes. The installed DEV store then requested only View online store / Theme; the authorized Update action completed and returned to the working embedded configuration app. No theme-write, customer, order, product-write or file-upload permission was requested or accepted. This verifies the live consent flow, not a successful theme-file API read or theme-invalidation test. The Worker was not deployed and the feature flag/baseline remain unchanged in this permission-only step.

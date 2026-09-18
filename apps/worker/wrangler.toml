@@ -1,4 +1,4 @@
-# Entorno DEV únicamente. Ningún secreto aquí: SHOPIFY_API_SECRET y DATABASE_URL se configuran en el panel de Cloudflare.
+# Solo DEV. SHOPIFY_CLIENT_SECRET y EVALUATE_TOKEN permanecen cifrados en Cloudflare.
 name = "eu-store-guard-dev"
 main = "src/index.js"
 compatibility_date = "2026-08-01"
@@ -6,3 +6,12 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 APP_ENV = "development"
+SHOPIFY_APP_ENABLED = "true"
+SHOPIFY_CLIENT_ID = "d54ea21641df8e52ae3beb63677ae15c"
+SHOPIFY_ALLOWED_SHOP = "eu-store-guard-dev.myshopify.com"
+
+# Reviewed editor placement only. CONFIGURED can render; public verification remains pending.
+NOTICE_DEPLOYMENT_EVIDENCE = "{\"reviewed\":true,\"reviewScope\":\"editor-placement\",\"reviewRecord\":\"DEV-SECTION-COVERAGE.md\",\"shop\":\"eu-store-guard-dev.myshopify.com\",\"themeId\":\"159264309480\",\"sectionId\":\"sections--22066757075176__17893321078e794eb7\",\"entryPoint\":\"header-section\",\"assetHash\":\"a5711f9046f7ea9edaabe190d436f313a6cd328e84c04c211d1936ab5430777a\",\"officialHashes\":[\"a5711f9046f7ea9edaabe190d436f313a6cd328e84c04c211d1936ab5430777a\"],\"assetLocale\":\"es\",\"isRgb\":true,\"interactionsToFullNotice\":1,\"yourEuropeLinkPresent\":true,\"themeRevision\":{\"reviewed\":true,\"themeId\":\"159264309480\",\"updatedAt\":\"2026-09-16T17:01:01Z\",\"reviewedAt\":\"2026-09-16T17:02:27.495Z\",\"headerSha256\":\"9610db54990950982434ad1c686a29b72f1cd22840b9ed8ffcbb82b3ebdfddf3\"}}"
+
+# Reviewed Horizon baseline restored after Dawn trial; see DEV-DAWN-REAL-FLOW.md.
+NOTICE_THEME_RECHECK_ENABLED = "true"

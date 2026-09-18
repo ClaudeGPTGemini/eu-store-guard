@@ -1,0 +1,40 @@
+name: Theme Extension
+
+on:
+  pull_request:
+    paths: [ 'extensions/**', '.github/workflows/theme-extension.yml' ]
+  push:
+    branches: [ main ]
+    paths: [ 'extensions/**' ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: extensions/eu-store-guard
+
+jobs:
+  tests:
+    name: theme-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm test
+
+  assets:
+    name: assets-integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+      # Verifica los assets YA VERSIONADOS contra assets-manifest.json.
+      # No descarga nada: la fuente de verdad de cada entrega es lo que hay en el repositorio.
+      - run: npm run assets:check

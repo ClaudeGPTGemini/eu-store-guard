@@ -1,0 +1,20 @@
+{
+  "rule_id": "EU_LEGAL_GUARANTEE_NOTICE_2026_01",
+  "rule_version": 3,
+  "supersedes_version": 2,
+  "revision_kind": "product_presentation_policy",
+  "change_date": "2026-09-13",
+  "recorded_date": "2026-09-16",
+  "audited_commit": "a16db9642893866e1cd7c82eb8c55f5e075c2a07",
+  "rule_sha256": "4b8fd928b116cfd5b66cd5fd48e0376314f877c042e7ae5ba761374cadfe5add",
+  "superseded_rule_sha256": "69768a538ddd87ca67052c1875237505881b29ef819645f96fcd075f501a7f14",
+  "hash_format": "SHA-256 of UTF-8 JSON.stringify(parsed rule), matching the Evidence Log",
+  "reason": "Version 3 adds header-section to accepted_entry_points and the corresponding evaluation check, and updates presentation_policy from version 1 to version 2. Header placement is supported_with_review, not verified.",
+  "interpretation_revision_unchanged": "NOTICE-PLACEMENT-2026-09-13",
+  "interpretation_note": "The interpretation_revision supersedes_version: 1 records the normative correction introduced in rule version 2. It is intentionally retained in version 3 because adding a product mechanism does not introduce a new normative interpretation.",
+  "evidence": [
+    "DEV-SECTION-COVERAGE.md",
+    "NOTICE-SECTION-MIGRATION.md"
+  ],
+  "limitations": "Initial evidence covers five Horizon editor views only; it does not establish public prominence, other theme compatibility or a LIVE state. This retrospective provenance record does not change either rule payload."
+}

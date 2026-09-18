@@ -1,7 +1,7 @@
 {
   "requirement": "EU_LEGAL_GUARANTEE_NOTICE",
   "rule_id": "EU_LEGAL_GUARANTEE_NOTICE_2026_01",
-  "version": 1,
+  "version": 3,
   "level": "STORE",
   "effective_from": "2026-09-27",
   "sources": [
@@ -17,7 +17,9 @@
   "accepted_entry_points": [
     "header",
     "catalog",
-    "checkout"
+    "checkout",
+    "top-bar",
+    "header-section"
   ],
   "surfaces": [
     "storefront",
@@ -94,11 +96,13 @@
             [
               "header",
               "catalog",
-              "checkout"
+              "checkout",
+              "top-bar",
+              "header-section"
             ]
           ]
         },
-        "reason": "entry_point_not_accepted"
+        "reason": "entry_point_not_supported_by_product_policy"
       },
       {
         "check": {
@@ -122,7 +126,9 @@
       }
     ],
     "verification": {
-      "checks": [],
+      "checks": [
+        "$verification.noticePresentation"
+      ],
       "surfaces": [
         "storefront",
         "checkout",
@@ -135,5 +141,46 @@
     "regime": "EMPCO_2024_825",
     "required": true,
     "max_status_when_not_verified_active": "CONFIGURED"
+  },
+  "interpretation_revision": {
+    "id": "NOTICE-PLACEMENT-2026-09-13",
+    "date": "2026-09-13",
+    "source": "https://commission.europa.eu/document/download/3e4dbee6-8184-4256-923d-c52551c7e9f0_en",
+    "section": "2.3, printed pages 15-19",
+    "basis": "Locations are non-exhaustive examples. Supported placements below are product policy, not an exhaustive legal whitelist.",
+    "supersedes_version": 1
+  },
+  "presentation_policy": {
+    "version": 2,
+    "positions": {
+      "top-bar": {
+        "decision": "supported_with_review",
+        "entry_point": "top-bar"
+      },
+      "bottom-right": {
+        "decision": "review_required",
+        "entry_point": null
+      },
+      "bottom-left": {
+        "decision": "review_required",
+        "entry_point": null
+      },
+      "inline": {
+        "decision": "review_required",
+        "entry_point": null
+      },
+      "header-section": {
+        "decision": "supported_with_review",
+        "entry_point": "header-section",
+        "mechanism": "section",
+        "required_group": "header"
+      }
+    },
+    "revision": {
+      "date": "2026-09-13",
+      "basis": "Product integration: Horizon header-group placement observed on five editor pages. No assertion of public prominence or universal theme compatibility.",
+      "supersedes_version": 1,
+      "evidence": "DEV-SECTION-COVERAGE.md"
+    }
   }
 }

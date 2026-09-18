@@ -1,0 +1,139 @@
+{
+  "requirement": "EU_LEGAL_GUARANTEE_NOTICE",
+  "rule_id": "EU_LEGAL_GUARANTEE_NOTICE_2026_01",
+  "version": 1,
+  "level": "STORE",
+  "effective_from": "2026-09-27",
+  "sources": [
+    "Directive (EU) 2024/825",
+    "Implementing Regulation (EU) 2025/1960",
+    "European Commission guidance, April 2026"
+  ],
+  "asset_policy": {
+    "format": "SVG_RGB",
+    "modifiable": false,
+    "source_version": "2025/1960-2026-04-guidance"
+  },
+  "accepted_entry_points": [
+    "header",
+    "catalog",
+    "checkout"
+  ],
+  "surfaces": [
+    "storefront",
+    "checkout",
+    "confirmation_email"
+  ],
+  "evaluation": {
+    "derive": {
+      "notice": {
+        "fn": "resolveNoticeAsset"
+      }
+    },
+    "gates": [
+      {
+        "check": {
+          "not": {
+            "eq": [
+              "$derived.notice.outcome",
+              "NOT_IN_SCOPE_V1"
+            ]
+          }
+        },
+        "on_false": "NOT_APPLICABLE",
+        "reason": "market_not_eu27"
+      },
+      {
+        "check": {
+          "not": {
+            "eq": [
+              "$derived.notice.outcome",
+              "LANGUAGE_REVIEW_REQUIRED"
+            ]
+          }
+        },
+        "on_false": "UNKNOWN",
+        "reason": "language_review_required"
+      }
+    ],
+    "required": [
+      "$evidence"
+    ],
+    "checks": [
+      {
+        "check": {
+          "has": [
+            "$evidence.officialHashes",
+            "$evidence.assetHash"
+          ]
+        },
+        "reason": "asset_not_official"
+      },
+      {
+        "check": {
+          "eq": [
+            "$evidence.assetLocale",
+            "$derived.notice.locale"
+          ]
+        },
+        "reason": "asset_locale_mismatch"
+      },
+      {
+        "check": {
+          "eq": [
+            "$evidence.isRgb",
+            true
+          ]
+        },
+        "reason": "asset_not_rgb"
+      },
+      {
+        "check": {
+          "in": [
+            "$evidence.entryPoint",
+            [
+              "header",
+              "catalog",
+              "checkout"
+            ]
+          ]
+        },
+        "reason": "entry_point_not_accepted"
+      },
+      {
+        "check": {
+          "not": {
+            "gt": [
+              "$evidence.interactionsToFullNotice",
+              1
+            ]
+          }
+        },
+        "reason": "full_notice_not_reachable_in_one_interaction"
+      },
+      {
+        "check": {
+          "eq": [
+            "$evidence.yourEuropeLinkPresent",
+            true
+          ]
+        },
+        "reason": "your_europe_link_missing"
+      }
+    ],
+    "verification": {
+      "checks": [],
+      "surfaces": [
+        "storefront",
+        "checkout",
+        "confirmation_email"
+      ],
+      "surfaces_verified": "$evidence.surfacesVerified"
+    }
+  },
+  "market_activation": {
+    "regime": "EMPCO_2024_825",
+    "required": true,
+    "max_status_when_not_verified_active": "CONFIGURED"
+  }
+}

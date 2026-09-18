@@ -1,0 +1,52 @@
+name: Shopify DEV candidate
+on:
+  workflow_dispatch:
+  push:
+    branches: [audit/theme-extension-7de17850]
+    paths: [.github/workflows/shopify-dev-upload.yml]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shopify-eu-store-guard-dev
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 22
+      - name: Install test dependencies
+        run: npm install --prefix extensions/eu-store-guard --ignore-scripts --no-save --package-lock=false liquidjs@10.29.0
+      - name: Validate source and DEV packaging
+        run: |
+          npm test --prefix extensions/eu-store-guard
+          npm run assets:check --prefix extensions/eu-store-guard
+          node --test scripts/package-shopify-dev.test.mjs
+          node scripts/package-shopify-dev.mjs .scratch/shopify-dev-es es
+      - name: Install pinned Shopify CLI
+        run: npm install --prefix .scratch/shopify-tools @shopify/cli@4.8.0 --no-audit --no-fund
+      - name: Upload DEV candidate without release
+        env:
+          SHOPIFY_APP_AUTOMATION_TOKEN: ${{ secrets.SHOPIFY_DEV_AUTOMATION_TOKEN }}
+        run: |
+          test -n "$SHOPIFY_APP_AUTOMATION_TOKEN" || { echo 'Missing SHOPIFY_DEV_AUTOMATION_TOKEN'; exit 1; }
+          node .scratch/shopify-tools/node_modules/@shopify/cli/bin/run.js app deploy --path .scratch/shopify-dev-es --config dev --no-release --no-color
+# Deployment request: audited v24, Spanish DEV candidate; release remains a separate DEV action.
+# DEV inspection candidate: explicit editor-only preview; no public state override.
+# DEV flow-layout comparison: inline remains review_required and publicly blocked.
+# Keep the inspection label in normal flow too, so it cannot cover the candidate.
+# DEV section candidate: inspect header-group placement and five page types; editor only.
+# Add real Header section with atomic mechanism migration; retain inspection block and legacy embed.
+# Header block display name respects Shopify's 25-character limit.
+# DEV-only hidden boolean diagnostics identify a rejected runtime binding without exposing data.
+# Use supported section.id and schema header-group restriction; parent section.location is inaccessible.
+
+# 2026-09-16: owner-authorized read_themes added to read_locales for DEV theme invalidation; upload without release.

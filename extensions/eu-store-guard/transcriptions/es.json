@@ -1,0 +1,11 @@
+{
+  "locale": "es",
+  "status": "visually-checked",
+  "reviewedAt": "2026-09-13",
+  "reviewMethod": "Assistant visual comparison of versioned SVG against EUR-Lex Annex I; independent audit pending",
+  "independentAudit": "pending",
+  "source": "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32025R1960",
+  "asset": "notice-es-rgb.svg",
+  "assetSha256": "a5711f9046f7ea9edaabe190d436f313a6cd328e84c04c211d1936ab5430777a",
+  "transcriptSha256": "07297dc03ec388fa929305615adda47709e2fdeeaa5c87b07e5041cd48c815b6"
+}

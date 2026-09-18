@@ -1,0 +1,14 @@
+{
+  "guarantee": {
+    "title": "Legal guarantee",
+    "open": "View the EU legal guarantee notice",
+    "close": "Close",
+    "learn_more": "More information on Your Europe",
+    "enlarge": "Open full-size official image",
+    "image_description": "Official legal guarantee notice as an image. Open the full-size image link; an accessible transcript in this language is pending."
+  },
+  "garan": {
+    "title": "Producer durability guarantee",
+    "open": "View guarantee details"
+  }
+}
